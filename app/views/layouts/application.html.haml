@@ -1,0 +1,12 @@
+!!!
+%html(lang="en")
+  %head
+    = render 'shared/head'
+
+  %body
+    .container-fluid
+      = render 'shared/header'
+      .container
+        = yield
+
+  = render 'shared/footer'
