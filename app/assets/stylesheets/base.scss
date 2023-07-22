@@ -1,9 +1,26 @@
+h1, h2, h3 {
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 1.5em;
+}
+
+a {
+  text-decoration: none;
+}
+
 header {
-  margin: 2em 0;
-  h1 {
-    font-size: 2em;
-    font-weight: 700;
-  }
-  padding-bottom: .3em;
+  margin: 1em 0 2em 0;
+  padding-bottom: .1em;
   border-bottom: 6px solid #000;
+}
+
+label {
+  margin-bottom: 0.5rem;
+}
+
+.navbar-brand {
+  font-size: 1.7em;
+  font-weight: 700;
 }

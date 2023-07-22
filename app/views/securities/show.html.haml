@@ -1,0 +1,9 @@
+%p#notice= notice
+
+%p
+  %b Name:
+  = @security.name
+
+= link_to 'Edit', edit_security_path(@security)
+\|
+= link_to 'Back', securities_path

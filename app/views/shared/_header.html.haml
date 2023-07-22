@@ -1,8 +1,18 @@
 %header
-  %h1 Gain
+  %nav.navbar.navbar-expand-lg.navbar-light
+    = link_to "Gain", root_path, class: 'navbar-brand'
+    %button.navbar-toggler(data-toggle="collapse" data-target="#navbarNav")
+      %span.navbar-toggler-icon
+    .collapse.navbar-collapse#navbarNav
+      %ul.navbar-nav
+        %li.nav-item= link_to 'Accounts', accounts_path, class: 'nav-link'
+        - if @account
+          %li.nav-item.nav-link.disabled= @account.title
 
   / - if signed_in?
   /   = button_to 'Sign out', sign_out_path, method: :delete
   / - else
   /   = link_to 'Sign in', sign_in_path
+
+
 
