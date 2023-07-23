@@ -1,0 +1,36 @@
+%h1 Transactions
+
+%table.table
+  %thead
+    %tr
+      %th Date
+      %th Security
+      %th Price
+      %th Quantity
+      %th Amount
+      %th Security balance
+      %th Cash balance
+      %th Transaction type
+      %th
+      %th
+      %th
+
+  %tbody
+    - @transactions.each do |transaction|
+      %tr
+        %td= transaction.date
+        %td= transaction.security.name
+        %td= transaction.price
+        %td= transaction.quantity
+        %td= transaction.amount
+        %td= transaction.security_balance
+        %td= transaction.cash_balance
+        %td= transaction.transaction_type
+        %td= link_to 'Show', account_transaction_path(@account, transaction)
+        %td= link_to 'Edit', edit_account_transaction_path(@account, transaction)
+        %td= link_to 'Destroy', account_transaction_path(@account, transaction), method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' }
+
+%br
+
+= link_to new_account_transaction_path(@account) do
+  %i.bi.bi-plus-lg

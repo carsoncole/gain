@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_23_185617) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
@@ -35,6 +35,24 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_185617) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "transactions", force: :cascade do |t|
+    t.string "date"
+    t.integer "account_id", null: false
+    t.integer "security_id", null: false
+    t.decimal "price", precision: 15, scale: 5
+    t.decimal "quantity", precision: 15, scale: 2
+    t.decimal "fee", precision: 15, scale: 2, default: "0.0"
+    t.decimal "other", precision: 15, scale: 2, default: "0.0"
+    t.decimal "amount", precision: 15, scale: 2
+    t.decimal "security_balance", precision: 15, scale: 5
+    t.decimal "cash_balance", precision: 15, scale: 2
+    t.string "transaction_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_transactions_on_account_id"
+    t.index ["security_id"], name: "index_transactions_on_security_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -47,4 +65,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_185617) do
     t.index ["remember_token"], name: "index_users_on_remember_token", unique: true
   end
 
+  add_foreign_key "transactions", "accounts"
+  add_foreign_key "transactions", "securities"
 end

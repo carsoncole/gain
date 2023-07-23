@@ -1,0 +1,34 @@
+= form_for [@account, @transaction] do |f|
+  - if @transaction.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@transaction.errors.count, "error")} prohibited this transaction from being saved:"
+      %ul
+        - @transaction.errors.full_messages.each do |message|
+          %li= message
+
+  .mb-3
+    = f.label :date, class: 'form-lable'
+    = f.date_field :date, value: Date.today, class: 'form-control'
+  .mb-3
+    = f.label :security, class: 'form-lable'
+    = f.collection_select :security_id, Security.all, :id, :name, {}, class: 'form-select'
+  .mb-3
+    = f.label :price, class: 'form-lable'
+    = f.text_field :price, class: 'form-control'
+  .mb-3
+    = f.label :quantity, class: 'form-lable'
+    = f.text_field :quantity, class: 'form-control'
+  .mb-3
+    = f.label :fee, class: 'form-lable'
+    = f.text_field :fee, class: 'form-control'
+  .mb-3
+    = f.label :other, class: 'form-lable'
+    = f.text_field :other, class: 'form-control'
+  .mb-3
+    = f.label :amount, class: 'form-lable'
+    = f.text_field :amount, class: 'form-control'
+  .mb-3
+    = f.label :transaction_type, class: 'form-lable'
+    = f.select :transaction_type, options_for_select(Transaction::TYPES), {}, class: 'form-select'
+  .actions
+    = f.submit 'Save', class: 'btn btn-primary'

@@ -1,0 +1,39 @@
+%p#notice= notice
+
+%p
+  %b Date:
+  = @transaction.date
+%p
+  %b Account:
+  = @transaction.account
+%p
+  %b Security:
+  = @transaction.security
+%p
+  %b Price:
+  = @transaction.price
+%p
+  %b Quantity:
+  = @transaction.quantity
+%p
+  %b Fee:
+  = @transaction.fee
+%p
+  %b Other:
+  = @transaction.other
+%p
+  %b Amount:
+  = @transaction.amount
+%p
+  %b Security balance:
+  = @transaction.security_balance
+%p
+  %b Cash balance:
+  = @transaction.cash_balance
+%p
+  %b Transaction type:
+  = @transaction.transaction_type
+
+= link_to 'Edit', edit_transaction_path(@transaction)
+\|
+= link_to 'Back', transactions_path

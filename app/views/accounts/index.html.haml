@@ -1,5 +1,3 @@
-= render 'settings/nav'
-
 %h1 Accounts
 
 
@@ -14,7 +12,7 @@
   %tbody
     - @accounts.each do |account|
       %tr
-        %td= link_to account.title, account
+        %td= link_to account.title, account_transactions_path(account)
         %td= account.number
         %td= account.currency&.name
         %td.text-end
