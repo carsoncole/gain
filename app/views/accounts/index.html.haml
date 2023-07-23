@@ -1,3 +1,5 @@
+= render 'settings/nav'
+
 %h1 Accounts
 
 
@@ -14,11 +16,14 @@
       %tr
         %td= link_to account.title, account
         %td= account.number
-        %td= account.currency_id
+        %td= account.currency&.name
         %td.text-end
+          = link_to edit_account_path(account) do
+            %i.bi.bi-pencil
           = link_to account, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' } do
             %i.bi.bi-trash
 
 %br
 
-= link_to 'New Account', new_account_path
+= link_to new_account_path do
+  %i.bi.bi-plus-lg

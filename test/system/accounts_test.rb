@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class AccountsTest < ApplicationSystemTestCase
   setup do
-    @account = accounts(:one)
+    @account = create(:account)
   end
 
   test "visiting the index" do

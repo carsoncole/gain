@@ -1,5 +1,6 @@
 class SecuritiesController < ApplicationController
   before_action :set_security, only: %i[ show edit update destroy ]
+  layout 'settings'
 
   # GET /securities or /securities.json
   def index
@@ -25,7 +26,7 @@ class SecuritiesController < ApplicationController
 
     respond_to do |format|
       if @security.save
-        format.html { redirect_to security_url(@security), notice: "Security was successfully created." }
+        format.html { redirect_to securities_url, notice: "Security was successfully created." }
         format.json { render :show, status: :created, location: @security }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -38,7 +39,7 @@ class SecuritiesController < ApplicationController
   def update
     respond_to do |format|
       if @security.update(security_params)
-        format.html { redirect_to security_url(@security), notice: "Security was successfully updated." }
+        format.html { redirect_to securities_url, notice: "Security was successfully updated." }
         format.json { render :show, status: :ok, location: @security }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -65,6 +66,6 @@ class SecuritiesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def security_params
-      params.require(:security).permit(:name)
+      params.require(:security).permit(:name, :symbol, :currency_id)
     end
 end

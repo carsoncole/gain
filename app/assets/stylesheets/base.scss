@@ -1,26 +1,36 @@
+body {
+  font-family: "SF Pro Text","SF Pro Icons","Helvetica Neue","Helvetica","Arial",sans-serif;
+  letter-spacing: -0.022em;
+  line-height: 1.47059;
+  font-size: 17px;
+  color: #1d1d1f;
+  -webkit-font-smoothing: antialiased;
+}
+
 h1, h2, h3 {
   font-weight: 700;
 }
 
 h1 {
-  font-size: 1.5em;
+  font-size: 1.3em;
+  margin-bottom: 1.5em;
 }
 
 a {
   text-decoration: none;
+  color: #1d1d1f;
 }
 
-header {
-  margin: 1em 0 2em 0;
-  padding-bottom: .1em;
-  border-bottom: 6px solid #000;
-}
 
 label {
   margin-bottom: 0.5rem;
 }
 
-.navbar-brand {
-  font-size: 1.7em;
+.nav .active {
   font-weight: 700;
+}
+
+.navbar-brand {
+  text-transform: uppercase;
+  font-weight: 600;
 }

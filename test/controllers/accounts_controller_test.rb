@@ -2,7 +2,7 @@ require "test_helper"
 
 class AccountsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @account = accounts(:one)
+    @account = create(:account)
   end
 
   test "should get index" do
@@ -35,7 +35,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
 
   test "should update account" do
     patch account_url(@account), params: { account: { currency_id: @account.currency_id, number: @account.number, title: @account.title } }
-    assert_redirected_to account_url(@account)
+    assert_redirected_to accounts_url
   end
 
   test "should destroy account" do

@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class SecuritiesTest < ApplicationSystemTestCase
   setup do
-    @security = securities(:one)
+    @security = create(:security)
   end
 
   test "visiting the index" do

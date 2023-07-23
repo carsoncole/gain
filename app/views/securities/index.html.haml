@@ -1,3 +1,5 @@
+= render 'settings/nav'
+
 %h1 Securities
 
 %table.table
@@ -6,17 +8,22 @@
     %tr
       %th
       %th
-
+      %th
+      %th
 
   %tbody
     - @securities.each do |security|
       %tr
-        %td= security.name
+        %td= security&.name
+        %td= security.symbol
+        %td= security.currency&.name
         %td.text-end
-          = link_to 'Edit', edit_security_path(security)
-          \|
-          = link_to 'Destroy', security, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' }
+          = link_to edit_security_path(security) do
+            %i.bi.bi-pencil
+          = link_to security, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
+            %i.bi.bi-trash
 
 %br
 
-= link_to 'New Security', new_security_path
+= link_to new_security_path do
+  %i.bi.bi-plus-lg

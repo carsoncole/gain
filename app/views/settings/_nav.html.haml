@@ -1,0 +1,7 @@
+%ul.nav.justify-content-center.mb-3
+  %li.nav-item
+    = link_to "Securities", securities_path, class: "nav-link #{ controller_name == 'securities' ? 'active' : nil }"
+  %li.nav-item
+    = link_to "Accounts", accounts_path, class: "nav-link #{ controller_name == 'accounts' ? 'active' : nil }"
+  %li.nav-item
+    = link_to "Currencies", currencies_path, class: "nav-link #{ controller_name == 'currencies' ? 'active' : nil }"

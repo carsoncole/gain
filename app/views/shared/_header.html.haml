@@ -1,15 +1,14 @@
-%header
-  %nav.navbar.navbar-expand-lg.navbar-light
+%nav.navbar.navbar-expand-lg.navbar-light.bg-light
+  .container-fluid
     = link_to "Gain", root_path, class: 'navbar-brand'
-    %button.navbar-toggler(data-toggle="collapse" data-target="#navbarNav")
-      %span.navbar-toggler-icon
-    .collapse.navbar-collapse#navbarNav
-      %ul.navbar-nav
-        %li.nav-item
-          = link_to settings_path do
-            %i.bi.bi-gear
+    .d-flex
+      %ul.navbar-nav.me-auto
         - if @account
-          %li.nav-item.nav-link.disabled= @account.title
+          %li.nav-item
+            = @account.title
+        %li.nav-item
+          = link_to accounts_path do
+            %i.bi.bi-gear.p-2
 
   / - if signed_in?
   /   = button_to 'Sign out', sign_out_path, method: :delete

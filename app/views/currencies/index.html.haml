@@ -1,0 +1,28 @@
+= render 'settings/nav'
+
+%h1 Currencies
+
+%table.table
+  %thead
+    %tr
+      %th
+      %th
+      %th
+
+
+  %tbody
+    - @currencies.each do |currency|
+      %tr
+        %td= currency.name
+        %td= currency.symbol
+        %td.text-end
+          = link_to edit_currency_path(currency) do
+            %i.bi.bi-pencil
+          = link_to currency, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
+            %i.bi.bi-trash
+
+
+%br
+
+= link_to new_currency_path, id: 'new-currency-link' do
+  %i.bi.bi-plus-lg
