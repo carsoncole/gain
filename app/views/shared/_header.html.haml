@@ -5,7 +5,9 @@
       %span.navbar-toggler-icon
     .collapse.navbar-collapse#navbarNav
       %ul.navbar-nav
-        %li.nav-item= link_to 'Accounts', accounts_path, class: 'nav-link'
+        %li.nav-item
+          = link_to settings_path do
+            %i.bi.bi-gear
         - if @account
           %li.nav-item.nav-link.disabled= @account.title
 

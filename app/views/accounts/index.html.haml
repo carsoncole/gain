@@ -1,22 +1,23 @@
 %h1 Accounts
 
-.col-lg-4
-  %table.table
-    %thead
-      %tr
-        %th
-        %th
-        %th
-        %th
 
-    %tbody
-      - @accounts.each do |account|
-        %tr
-          %td= link_to account.title, account
-          %td= account.number
-          %td= account.currency_id
-          %td.text-end
-            = link_to 'Destroy', account, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' }
+%table.table
+  %thead
+    %tr
+      %th
+      %th
+      %th
+      %th
+
+  %tbody
+    - @accounts.each do |account|
+      %tr
+        %td= link_to account.title, account
+        %td= account.number
+        %td= account.currency_id
+        %td.text-end
+          = link_to account, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' } do
+            %i.bi.bi-trash
 
 %br
 

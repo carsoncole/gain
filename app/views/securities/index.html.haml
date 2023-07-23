@@ -1,20 +1,21 @@
-%h1 Listing securities
+%h1 Securities
 
-%table
+%table.table
+
   %thead
     %tr
-      %th Name
       %th
       %th
-      %th
+
 
   %tbody
     - @securities.each do |security|
       %tr
         %td= security.name
-        %td= link_to 'Show', security
-        %td= link_to 'Edit', edit_security_path(security)
-        %td= link_to 'Destroy', security, method: :delete, data: { confirm: 'Are you sure?' }
+        %td.text-end
+          = link_to 'Edit', edit_security_path(security)
+          \|
+          = link_to 'Destroy', security, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' }
 
 %br
 
