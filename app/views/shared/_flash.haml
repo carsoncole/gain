@@ -1,0 +1,16 @@
+- if flash.keys.any?
+  #flash
+    - if flash[:notice]
+      .alert.alert-primary
+        .notification-icon
+          %i.bi.bi-check-lg
+        = flash[:notice].html_safe
+    - if flash[:alert]
+      .alert.alert-danger
+        .notification-icon
+          %i.bi.bi-exclamation-lg
+        = flash[:alert].html_safe
+    - if flash[:warning]
+      .alert.alert-warning
+        .notification-icon %i.bi.bi-exclamation-lg
+        = flash[:warning].html_safe

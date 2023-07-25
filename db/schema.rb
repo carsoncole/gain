@@ -36,7 +36,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.string "date"
+    t.date "date"
     t.integer "account_id", null: false
     t.integer "security_id", null: false
     t.decimal "price", precision: 15, scale: 5

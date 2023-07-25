@@ -6,7 +6,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions or /transactions.json
   def index
-    @transactions = @account.transactions.all
+    @pagy, @transactions = pagy(@account.transactions.order(date: :desc))
   end
 
   # GET /transactions/1 or /transactions/1.json
@@ -41,7 +41,7 @@ class TransactionsController < ApplicationController
   def update
     respond_to do |format|
       if @transaction.update(transaction_params)
-        format.html { redirect_to transaction_url(@transaction), notice: "Transaction was successfully updated." }
+        format.html { redirect_to account_transaction_url(@account, @transaction), notice: "Transaction was successfully updated." }
         format.json { render :show, status: :ok, location: @transaction }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -55,7 +55,7 @@ class TransactionsController < ApplicationController
     @transaction.destroy
 
     respond_to do |format|
-      format.html { redirect_to transactions_url, notice: "Transaction was successfully destroyed." }
+      format.html { redirect_to account_transactions_url(@account), notice: "Transaction was successfully destroyed." }
       format.json { head :no_content }
     end
   end
@@ -63,7 +63,7 @@ class TransactionsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_transaction
-      @transaction = @account.transactions.where(id: params[:id])
+      @transaction = @account.transactions.where(id: params[:id]).first
     end
 
     def set_account

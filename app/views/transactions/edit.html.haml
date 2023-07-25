@@ -2,6 +2,6 @@
 
 = render 'form'
 
-= link_to 'Show', @transaction
+= link_to 'Show', [@account, @transaction]
 \|
-= link_to 'Back', transactions_path
+= link_to 'Back', account_transactions_path(@account)

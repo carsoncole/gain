@@ -16,9 +16,9 @@
         %td= security.symbol
         %td= security.currency&.name
         %td.text-end
-          = link_to edit_security_path(security) do
+          = link_to edit_security_path(security), id: "edit-security-#{security.id}" do
             %i.bi.bi-pencil
-          = link_to security, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
+          = link_to security, method: :delete, id: "delete-security-#{security.id}", data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
             %i.bi.bi-trash
 
 %br

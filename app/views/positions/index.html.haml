@@ -1,0 +1,12 @@
+%h1 Positions
+
+%table.table
+  %thead
+    %tr
+      %th
+      %th Quantity
+  %tbody
+    - @positions.each do |position|
+      %tr
+        %th= position.security.name
+        %th= position.security_balance

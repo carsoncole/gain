@@ -22,8 +22,8 @@ class SecuritiesTest < ApplicationSystemTestCase
   end
 
   test "should update Security" do
-    visit security_url(@security)
-    click_on "Edit this security", match: :first
+    visit securities_url(@security)
+    click_on "edit-security-#{@security.id}", match: :first
 
     fill_in "Name", with: @security.name
     click_on "Update Security"
@@ -33,7 +33,7 @@ class SecuritiesTest < ApplicationSystemTestCase
   end
 
   test "should destroy Security" do
-    visit security_url(@security)
+    visit securities_url(@security)
     click_on "Destroy this security", match: :first
 
     assert_text "Security was successfully destroyed"

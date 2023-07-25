@@ -1,39 +1,40 @@
 %p#notice= notice
 
-%p
-  %b Date:
-  = @transaction.date
-%p
-  %b Account:
-  = @transaction.account
-%p
-  %b Security:
-  = @transaction.security
-%p
-  %b Price:
-  = @transaction.price
-%p
-  %b Quantity:
-  = @transaction.quantity
-%p
-  %b Fee:
-  = @transaction.fee
-%p
-  %b Other:
-  = @transaction.other
-%p
-  %b Amount:
-  = @transaction.amount
-%p
-  %b Security balance:
-  = @transaction.security_balance
-%p
-  %b Cash balance:
-  = @transaction.cash_balance
-%p
-  %b Transaction type:
-  = @transaction.transaction_type
+%table.table
+  %tbody
+  %tr
+    %th Date:
+    %td.text-end= @transaction.date
+  %tr
+    %th
+    %td.text-end= @transaction.transaction_type
+  %tr
+    %th Security:
+    %td.text-end= @transaction.security.name
+  %tr
+    %th Price:
+    %td.text-end= number_to_currency @transaction.price
+  %tr
+    %th Quantity:
+    %td.text-end= number_with_delimiter @transaction.quantity, precision: 2
+  %tr
+    %th Fee:
+    %td.text-end= number_to_currency @transaction.fee
+  %tr
+    %th Other:
+    %td.text-end= number_to_currency @transaction.other
+  %tr
+    %th Amount:
+    %td.text-end= number_to_currency @transaction.amount
+  %tr
+    %th Security balance:
+    %td.text-end= @transaction.security_balance
 
-= link_to 'Edit', edit_transaction_path(@transaction)
+
+%br
+= link_to account_transaction_path(@account, @transaction), id: "delete-transaction", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do
+  %i.bi.bi-trash
+= link_to edit_account_transaction_path(@account, @transaction), id: "edit-transaction" do
+  %i.bi.bi-pencil
 \|
-= link_to 'Back', transactions_path
+= link_to 'Back', account_transactions_path(@account)
