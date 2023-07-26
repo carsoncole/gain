@@ -6,7 +6,7 @@ class TransactionsController < ApplicationController
 
   # GET /transactions or /transactions.json
   def index
-    @pagy, @transactions = pagy(@account.transactions.order(date: :desc))
+    @pagy, @transactions = pagy(@account.transactions.order(date: :desc, created_at: :desc))
   end
 
   # GET /transactions/1 or /transactions/1.json

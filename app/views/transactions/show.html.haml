@@ -30,7 +30,6 @@
     %th Security balance:
     %td.text-end= @transaction.security_balance
 
-
 %br
 = link_to account_transaction_path(@account, @transaction), id: "delete-transaction", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do
   %i.bi.bi-trash
