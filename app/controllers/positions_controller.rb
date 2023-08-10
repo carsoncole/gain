@@ -3,7 +3,7 @@ class PositionsController < ApplicationController
   layout 'accounts'
 
   def index
-    @positions = @account.transactions
+    @positions = @account.holdings_as_security_ids
   end
 
   def set_account

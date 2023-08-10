@@ -1,6 +1,6 @@
 class Security < ApplicationRecord
   belongs_to :currency
-  has_many :transactions
+  has_many :trades
 
   validates :name, :symbol, presence: true
 

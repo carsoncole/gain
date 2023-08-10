@@ -2,6 +2,8 @@
   %li.nav-item
     = link_to "Positions", account_positions_path(@account), class: "nav-link #{ controller_name == 'positions' ? 'active' : nil }"
   %li.nav-item
-    = link_to "Transactions", account_transactions_path(@account), class: "nav-link #{ controller_name == 'transactions' ? 'active' : nil }"
+    = link_to "Trades", account_trades_path(@account), class: "nav-link #{ controller_name == 'trades' ? 'active' : nil }"
+  %li.nav-item
+    = link_to "Gain/Losses", account_gain_losses_path(@account), class: "nav-link #{ controller_name == 'gain_losses' ? 'active' : nil }"
 
 

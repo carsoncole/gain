@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
     t.integer "currency_id"
+    t.boolean "is_fifo", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["currency_id"], name: "index_accounts_on_currency_id"
@@ -27,6 +28,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "gain_losses", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.date "date"
+    t.integer "security_id", null: false
+    t.integer "trade_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_gain_losses_on_account_id"
+    t.index ["security_id"], name: "index_gain_losses_on_security_id"
+    t.index ["trade_id"], name: "index_gain_losses_on_trade_id"
+  end
+
   create_table "securities", force: :cascade do |t|
     t.string "name"
     t.string "symbol"
@@ -35,7 +48,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "transactions", force: :cascade do |t|
+  create_table "trades", force: :cascade do |t|
     t.date "date"
     t.integer "account_id", null: false
     t.integer "security_id", null: false
@@ -44,13 +57,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
     t.decimal "fee", precision: 15, scale: 2, default: "0.0"
     t.decimal "other", precision: 15, scale: 2, default: "0.0"
     t.decimal "amount", precision: 15, scale: 2
-    t.decimal "security_balance", precision: 15, scale: 5, default: "0.0"
-    t.decimal "cash_balance", precision: 15, scale: 2
-    t.string "transaction_type"
+    t.decimal "quantity_balance", precision: 15, scale: 5, default: "0.0"
+    t.decimal "cost_balance", precision: 15, scale: 2
+    t.decimal "quantity_tax_balance", precision: 15, scale: 5, default: "0.0"
+    t.decimal "current_cost_balance", precision: 15, scale: 2
+    t.string "trade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_transactions_on_account_id"
-    t.index ["security_id"], name: "index_transactions_on_security_id"
+    t.index ["account_id", "security_id"], name: "index_trades_on_account_id_and_security_id"
+    t.index ["account_id"], name: "index_trades_on_account_id"
+    t.index ["security_id"], name: "index_trades_on_security_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -65,6 +81,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_23_212623) do
     t.index ["remember_token"], name: "index_users_on_remember_token", unique: true
   end
 
-  add_foreign_key "transactions", "accounts"
-  add_foreign_key "transactions", "securities"
+  add_foreign_key "gain_losses", "accounts"
+  add_foreign_key "gain_losses", "securities"
+  add_foreign_key "gain_losses", "trades"
+  add_foreign_key "trades", "accounts"
+  add_foreign_key "trades", "securities"
 end

@@ -20,7 +20,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
       post accounts_url, params: { account: { currency_id: @account.currency_id, number: @account.number, title: @account.title } }
     end
 
-    assert_redirected_to account_url(Account.last)
+    assert_redirected_to accounts_url
   end
 
   test "should get edit" do
