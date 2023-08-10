@@ -1,24 +1,9 @@
-# README
+# Gain
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Accounting application for investments. Track position, gains and losses, and generate reports for tax filings.
 
-Things you may want to cover:
 
-* Ruby version
+## Requirements
 
-* System dependencies
+Ruby and Ruby on Rails are the primary requirements. The database configured is SQLite.
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
