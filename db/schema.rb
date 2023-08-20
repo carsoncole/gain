@@ -16,16 +16,20 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
     t.string "number"
     t.integer "currency_id"
     t.boolean "is_fifo", default: true
+    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["currency_id"], name: "index_accounts_on_currency_id"
+    t.index ["user_id"], name: "index_accounts_on_user_id"
   end
 
   create_table "currencies", force: :cascade do |t|
     t.string "name"
     t.string "symbol"
+    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_currencies_on_user_id"
   end
 
   create_table "gain_losses", force: :cascade do |t|
@@ -46,8 +50,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
     t.string "name"
     t.string "symbol"
     t.integer "currency_id"
+    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_securities_on_user_id"
   end
 
   create_table "trades", force: :cascade do |t|

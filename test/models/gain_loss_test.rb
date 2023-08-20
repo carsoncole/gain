@@ -148,4 +148,28 @@ class GainLossTest < ActiveSupport::TestCase
     assert_equal 100, @account.gain_losses.first.amount
   end
 
+  # creates random collection of 10 each buy/sells trades, with a price of 10 that should sum to 0
+  test "multiple buy sells" do
+    transactions_to_do = []
+    buys, sells = 0, 0
+    (1..20).each do |t|
+      if buys == 10
+        type = 'Sell'
+      elsif sells == 10
+        type = 'Buy'
+      else
+        type = ['Buy', 'Sell'][rand(2)]
+      end
+      buys += 1 if type == 'Buy'
+      sells += 1 if type == 'Sell'
+      transactions_to_do.insert(rand(transactions_to_do.length), type)
+    end
+    transactions_to_do.each do |type|
+      create(:trade, trade_type: type, quantity: 10, security: @security, account: @account)
+    end
+
+    assert_equal 10, @account.gain_losses.count
+    assert_equal 0, @account.gain_losses.sum(:amount)
+  end
+
 end

@@ -4,10 +4,9 @@ class AccountsController < ApplicationController
 
   # GET /accounts or /accounts.json
   def index
-    @accounts = Account.all
+    @accounts = current_user.accounts.all
   end
 
-  # GET /accounts/1 or /accounts/1.json
   def show
     render layout: 'accounts'
   end
@@ -23,7 +22,7 @@ class AccountsController < ApplicationController
 
   # POST /accounts or /accounts.json
   def create
-    @account = Account.new(account_params)
+    @account = current_user.accounts.new(account_params)
 
     respond_to do |format|
       if @account.save
@@ -62,7 +61,7 @@ class AccountsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_account
-      @account = Account.find(params[:id])
+      @account = current_user.accounts.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

@@ -5,6 +5,7 @@ class CreateAccounts < ActiveRecord::Migration[7.0]
       t.string :number
       t.references :currency
       t.boolean :is_fifo, default: true
+      t.references :user, null: false
 
       t.timestamps
     end

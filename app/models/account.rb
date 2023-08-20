@@ -1,5 +1,6 @@
 class Account < ApplicationRecord
   belongs_to :currency
+  belongs_to :user
   has_many :trades, dependent: :destroy
   has_many :gain_losses
   validates :title, :number, presence: true

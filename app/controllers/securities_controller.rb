@@ -4,7 +4,7 @@ class SecuritiesController < ApplicationController
 
   # GET /securities or /securities.json
   def index
-    @securities = Security.all
+    @securities = current_user.securities.all
   end
 
   # GET /securities/1 or /securities/1.json
@@ -13,7 +13,7 @@ class SecuritiesController < ApplicationController
 
   # GET /securities/new
   def new
-    @security = Security.new
+    @security = current_user.securities.new
   end
 
   # GET /securities/1/edit
@@ -22,7 +22,7 @@ class SecuritiesController < ApplicationController
 
   # POST /securities or /securities.json
   def create
-    @security = Security.new(security_params)
+    @security = current_user.securities.new(security_params)
 
     respond_to do |format|
       if @security.save
@@ -61,7 +61,7 @@ class SecuritiesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_security
-      @security = Security.find(params[:id])
+      @security = current_user.securities.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

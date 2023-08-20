@@ -4,7 +4,7 @@ class CurrenciesController < ApplicationController
 
   # GET /currencies or /currencies.json
   def index
-    @currencies = Currency.all
+    @currencies = current_user.currencies.all
   end
 
   # GET /currencies/1 or /currencies/1.json
@@ -13,7 +13,7 @@ class CurrenciesController < ApplicationController
 
   # GET /currencies/new
   def new
-    @currency = Currency.new
+    @currency = current_user.currencies.new
   end
 
   # GET /currencies/1/edit
@@ -22,7 +22,7 @@ class CurrenciesController < ApplicationController
 
   # POST /currencies or /currencies.json
   def create
-    @currency = Currency.new(currency_params)
+    @currency = current_user.currencies.new(currency_params)
 
     respond_to do |format|
       if @currency.save
@@ -61,7 +61,7 @@ class CurrenciesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_currency
-      @currency = Currency.find(params[:id])
+      @currency = current_user.currencies.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

@@ -4,6 +4,7 @@ class CreateSecurities < ActiveRecord::Migration[7.0]
       t.string :name
       t.string :symbol
       t.integer :currency_id
+      t.references :user, null: false
 
       t.timestamps
     end
