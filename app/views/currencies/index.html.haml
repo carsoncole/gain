@@ -14,9 +14,9 @@
         %td= currency.name
         %td= currency.symbol
         %td.text-end
-          = link_to edit_currency_path(currency) do
+          = link_to edit_currency_path(currency), id: "edit-currency-#{currency.id}" do
             %i.bi.bi-pencil
-          = link_to currency, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
+          = link_to currency, method: :delete, id: "delete-currency-#{currency.id}", data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
             %i.bi.bi-trash
 
 

@@ -30,5 +30,5 @@
   .mb-3
     = f.label :trade_type, class: 'form-label'
     = f.select :trade_type, options_for_select(Trade::TYPES), {}, class: 'form-select'
-  .actions
+  .mb-3
     = f.submit class: 'btn btn-primary'

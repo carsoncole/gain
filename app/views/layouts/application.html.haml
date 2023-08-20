@@ -3,7 +3,7 @@
   %head
     = render 'shared/head'
   %body
-    = render 'shared/header'
+    = render 'shared/header' if signed_in?
     .container.pt-5
       = render 'shared/flash'
       = yield

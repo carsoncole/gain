@@ -3,6 +3,7 @@ require "application_system_test_case"
 class CurrenciesTest < ApplicationSystemTestCase
   setup do
     @currency = create(:currency)
+    system_test_signin(@currency.user)
   end
 
   test "visiting the index" do
@@ -12,32 +13,36 @@ class CurrenciesTest < ApplicationSystemTestCase
 
   test "should create currency" do
     visit currencies_url
-    click_on "#new-currency-link"
+    click_on "new-currency-link"
 
     fill_in "Name", with: @currency.name
     fill_in "Symbol", with: @currency.symbol
     click_on "Create Currency"
 
     assert_text "Currency was successfully created"
-    click_on "Back"
+    assert_selector "h1", text: 'Currencies'
   end
 
   test "should update Currency" do
-    visit currency_url(@currency)
-    click_on "Edit this currency", match: :first
+    visit currencies_url
+    click_on "edit-currency-#{@currency.id}", match: :first
 
     fill_in "Name", with: @currency.name
     fill_in "Symbol", with: @currency.symbol
     click_on "Update Currency"
 
     assert_text "Currency was successfully updated"
-    click_on "Back"
+    assert_selector "h1", text: 'Currencies'
   end
 
   test "should destroy Currency" do
-    visit currency_url(@currency)
-    click_on "Destroy this currency", match: :first
+    visit currencies_url
+
+    accept_confirm do
+      click_on "delete-currency-#{@currency.id}", match: :first
+    end
 
     assert_text "Currency was successfully destroyed"
+    assert_selector "h1", text: 'Currencies'
   end
 end

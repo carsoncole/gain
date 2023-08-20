@@ -4,6 +4,7 @@ class TradesTest < ApplicationSystemTestCase
   setup do
     @account = create(:account)
     @trade = create(:trade, account: @account)
+    system_test_signin(@account.user)
   end
 
   test "visiting the index" do
@@ -26,6 +27,7 @@ class TradesTest < ApplicationSystemTestCase
     click_on "Create Trade"
 
     assert_text "Trade was successfully created"
+    assert_selector "h1", text: "Trades"
   end
 
   test "should update Trade" do
@@ -43,7 +45,6 @@ class TradesTest < ApplicationSystemTestCase
     click_on "Update Trade"
 
     assert_text "Trade was successfully updated"
-    click_on "Back"
   end
 
   test "should destroy Trade" do
@@ -53,5 +54,6 @@ class TradesTest < ApplicationSystemTestCase
     end
 
     assert_text "Trade was successfully destroyed"
+    assert_selector "h1", text: "Trades"
   end
 end

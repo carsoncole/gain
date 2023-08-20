@@ -11,5 +11,13 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
-  # Add more helper methods to be used by all tests here...
+  def system_test_signin(user)
+    visit '/sign_in'
+    fill_in "Email", with: user.email
+    fill_in "Password", with: user.password
+    within '#clearance' do
+      click_on "Sign in"
+    end
+    sleep 0.25 # tests were occasionally failing without this
+  end
 end

@@ -2,7 +2,10 @@ require "application_system_test_case"
 
 class SecuritiesTest < ApplicationSystemTestCase
   setup do
-    @security = create(:security)
+    @user = create(:user)
+    @security = create(:security, user: @user)
+    @currency = create(:currency, user: @user)
+    system_test_signin(@security.user)
   end
 
   test "visiting the index" do
@@ -12,13 +15,15 @@ class SecuritiesTest < ApplicationSystemTestCase
 
   test "should create security" do
     visit securities_url
-    click_on "New security"
+    click_on "new-security-link"
 
     fill_in "Name", with: @security.name
+    fill_in "Symbol", with: @security.symbol
+    select @currency.name, from: 'currency-selection'
     click_on "Create Security"
 
     assert_text "Security was successfully created"
-    click_on "Back"
+    assert_selector "h1", text: 'Securities'
   end
 
   test "should update Security" do
@@ -29,13 +34,15 @@ class SecuritiesTest < ApplicationSystemTestCase
     click_on "Update Security"
 
     assert_text "Security was successfully updated"
-    click_on "Back"
+    assert_selector "h1", text: 'Securities'
   end
 
   test "should destroy Security" do
     visit securities_url(@security)
-    click_on "Destroy this security", match: :first
-
+    accept_confirm do
+      click_on "delete-security-#{@security.id}", match: :first
+    end
     assert_text "Security was successfully destroyed"
+    assert_selector "h1", text: 'Securities'
   end
 end

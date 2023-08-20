@@ -16,9 +16,9 @@
       = f.label :symbol
       = f.text_field :symbol, class: 'form-control'
 
-    .mb-3
+    .mb-5
       = f.label :currency, class: 'form-label'
-      = f.collection_select :currency_id, Currency.all, :id, :name,{}, { class: 'form-select' }
+      = f.collection_select :currency_id, current_user.currencies, :id, :name,{}, { class: 'form-select', id: 'currency-selection' }
 
-    .mt-3
+    .mb-3
       = f.submit class: 'btn btn-primary'

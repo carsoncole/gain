@@ -1,4 +1,4 @@
-%nav.navbar.main.navbar-expand-lg.navbar-dark(style = "background-color: #111")
+%nav.navbar.main.navbar-expand-lg.navbar-dark(style = "background-color: #111" id = 'main-navbar')
   .container-fluid
     = link_to "Gain", root_path, class: 'navbar-brand'
     .d-flex
@@ -7,7 +7,7 @@
           %li.nav-item
             = @account.title
         %li.nav-item
-          = link_to accounts_path do
+          = link_to accounts_path, id: 'settings-link' do
             %i.bi.bi-gear.p-2
 
   / - if signed_in?

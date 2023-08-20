@@ -12,16 +12,16 @@
   %tbody
     - @accounts.each do |account|
       %tr
-        %td= link_to account.title, account_trades_path(account)
+        %td= link_to account.title, account_trades_path(account), id: "account-#{account.id}-link"
         %td= account.number
         %td= account.currency&.name
         %td.text-end
-          = link_to edit_account_path(account) do
+          = link_to edit_account_path(account), id: "edit-account-#{account.id}" do
             %i.bi.bi-pencil
-          = link_to account, method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' } do
+          = link_to account, method: :delete, id: "delete-account-#{account.id}", data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' } do
             %i.bi.bi-trash
 
 %br
 
-= link_to new_account_path do
+= link_to new_account_path, id: 'new-account-link' do
   %i.bi.bi-plus-lg
