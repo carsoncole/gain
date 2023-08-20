@@ -11,8 +11,8 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size: 1.3em;
-  margin-bottom: 1.5em;
+  font-size: 1.5em;
+  margin-bottom: 1.66em;
 }
 
 a {
@@ -38,4 +38,8 @@ label {
   display: inline-block;
   margin-right: 1em;
   font-weight: 900;
+}
+
+table.table .tax-data {
+  background-color: #333;
 }

@@ -6,13 +6,12 @@
       %th Date
       %th
       %th Security
-      %th Price
-      %th Qty
-      %th Amount
-      %th Qty Bal
-      %th Cost Bal
-      %th Qty Tax Bal
-      %th Cur Cost Bal
+      %th.text-end Price
+      %th.text-end Qty
+      %th.text-end Amount
+      %th.text-end Qty Bal
+      %th.text-end.tax-data Qty Tax Bal
+      %th.text-end.tax-data Cost Tax Bal
 
       %th
 
@@ -22,13 +21,12 @@
         %td= trade.date
         %td= trade.trade_type
         %td= trade.security.name
-        %td= number_to_currency(trade.price)
-        %td= number_with_delimiter(trade.quantity, precision: 2)
-        %td= number_to_currency(trade.amount)
-        %td= number_with_delimiter(trade.quantity_balance, precision: 2)
-        %td= number_to_currency(trade.cost_balance)
-        %td= number_with_delimiter(trade.quantity_balance, precision: 2)
-        %td= number_to_currency(trade.current_cost_balance,precision: 2)
+        %td.text-end= number_to_currency(trade.price)
+        %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.text-end= number_to_currency(trade.amount)
+        %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.tax-data.text-end= number_with_precision(trade.quantity_tax_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.tax-data.text-end= number_to_currency(trade.cost_tax_balance,precision: 2)
         %td.text-end
           = link_to account_trade_path(@account, trade) do
             %i.bi.bi-eye

@@ -31,12 +31,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
   create_table "gain_losses", force: :cascade do |t|
     t.integer "account_id", null: false
     t.date "date"
-    t.integer "security_id", null: false
     t.integer "trade_id", null: false
+    t.integer "source_trade_id"
+    t.decimal "quantity", precision: 15, scale: 2
+    t.decimal "amount", precision: 15, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_gain_losses_on_account_id"
-    t.index ["security_id"], name: "index_gain_losses_on_security_id"
+    t.index ["source_trade_id"], name: "index_gain_losses_on_source_trade_id"
     t.index ["trade_id"], name: "index_gain_losses_on_trade_id"
   end
 
@@ -58,9 +60,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
     t.decimal "other", precision: 15, scale: 2, default: "0.0"
     t.decimal "amount", precision: 15, scale: 2
     t.decimal "quantity_balance", precision: 15, scale: 5, default: "0.0"
-    t.decimal "cost_balance", precision: 15, scale: 2
     t.decimal "quantity_tax_balance", precision: 15, scale: 5, default: "0.0"
-    t.decimal "current_cost_balance", precision: 15, scale: 2
+    t.decimal "cost_tax_balance", precision: 15, scale: 2
     t.string "trade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -82,8 +83,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
   end
 
   add_foreign_key "gain_losses", "accounts"
-  add_foreign_key "gain_losses", "securities"
-  add_foreign_key "gain_losses", "trades"
   add_foreign_key "trades", "accounts"
   add_foreign_key "trades", "securities"
 end

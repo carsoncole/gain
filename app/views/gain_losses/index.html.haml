@@ -1,0 +1,20 @@
+%h1 Gains and Losses
+
+%table.table
+  %thead
+    %tr
+      %th Date
+      %th Trade
+      %th Source Trade
+      %th Security
+      %th Qty
+      %th Amount
+  %tbody
+    - @gain_losses.each do |gl|
+      %tr
+        %th= gl.date
+        %th= link_to gl.trade_id, account_trade_path(@account, gl.trade_id)
+        %th= link_to gl.source_trade_id, account_trade_path(@account, gl.source_trade_id)
+        %th= gl.trade.security.name
+        %th= gl.quantity
+        %th= number_to_currency(gl.amount)

@@ -10,9 +10,8 @@ class CreateTrades < ActiveRecord::Migration[7.0]
       t.decimal :other, precision: 15, scale: 2, default: 0
       t.decimal :amount, precision: 15, scale: 2
       t.decimal :quantity_balance, precision: 15, scale: 5, default: 0
-      t.decimal :cost_balance, precision: 15, scale: 2
       t.decimal :quantity_tax_balance, precision: 15, scale: 5, default: 0
-      t.decimal :current_cost_balance, precision: 15, scale: 2
+      t.decimal :cost_tax_balance, precision: 15, scale: 2
       t.string :trade_type
 
       t.timestamps
