@@ -13,7 +13,7 @@
     %td.text-end= @trade.security.name
   %tr
     %th Price:
-    %td.text-end= number_to_currency @trade.price
+    %td.text-end= number_to_currency @trade.price, precision: 5, strip_insignificant_zeros: true
   %tr
     %th Quantity:
     %td.text-end= number_with_delimiter @trade.quantity, precision: 2

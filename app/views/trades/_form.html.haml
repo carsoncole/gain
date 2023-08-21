@@ -8,7 +8,7 @@
 
   .mb-3
     = f.label :security, class: 'form-label'
-    = f.collection_select :security_id, Security.all, :id, :name, {}, class: 'form-select'
+    = f.collection_select :security_id, Security.order(:name), :id, :name, {}, class: 'form-select'
   .mb-3
     = f.label :trade_type, class: 'form-label'
     = f.select :trade_type, options_for_select(Trade::TYPES), {}, class: 'form-select'

@@ -18,10 +18,10 @@
   %tbody
     - @trades.each do |trade|
       %tr
-        %td= trade.date
+        %td= trade.date.strftime('%Y-%b-%d')
         %td= trade.trade_type
         %td= trade.security.name
-        %td.text-end= number_to_currency(trade.price)
+        %td.text-end= number_to_currency(trade.price, precision: 5, strip_insignificant_zeros: true)
         %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
         %td.text-end= number_to_currency(trade.amount)
         %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)

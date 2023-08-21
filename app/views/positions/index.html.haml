@@ -9,12 +9,17 @@
   %thead
     %tr
       %th
+      %th.text-end Cost
+      %th.text-end Avg Price
       %th.text-end Balance
   %tbody
     - @positions.each do |s|
       - position = @account.trades.where(security: s).order(date: :asc, id: :asc).last
+      - cost = position.security.trades.where(account_id: position.account_id).sum(:cost_tax_balance)
       - next if position.quantity_balance == 0
       %tr
-        %th= position.security.name
-        %th.text-end= number_with_precision(position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td= position.security.name
+        %td.text-end= number_to_currency(cost, precision: 2, strip_insignificant_zeros: true)
+        %td.text-end= number_with_precision(cost / position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.text-end= number_with_precision(position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
 
