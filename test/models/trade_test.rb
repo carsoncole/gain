@@ -39,6 +39,12 @@ class TradeTest < ActiveSupport::TestCase
     assert_equal 1035, trade.amount
   end
 
+  test "price calculation with amount provided" do
+    trade = create(:trade, account: @account, quantity: 10, price: 10, fee: 10, other: 10, amount: 200)
+    assert_equal 200, trade.amount
+    assert_equal 18, trade.price
+  end
+
   test "quantity balance for sequential BUY trades" do
     trade_1 = create(:trade, account: @account, security: @security, quantity: 10, price: 10)
     assert_equal 10, trade_1.reload.quantity_balance

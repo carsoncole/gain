@@ -14,7 +14,7 @@ class Trade < ApplicationRecord
 
   after_initialize :set_defaults!
   before_validation :set_quantity_sign!
-  before_validation :set_amount!
+  before_validation :set_amount_or_price!
 
   # Update quantity balances
   after_save :calculate_related_quantity_balances!, unless: :is_recalc
@@ -41,8 +41,12 @@ class Trade < ApplicationRecord
     self.quantity = -self.quantity.abs if self.trade_type == 'Sell'
   end
 
-  def set_amount!
-    self.amount = (self.price * self.quantity.abs) + self.fee + self.other
+  def set_amount_or_price!
+    if self.amount.present?
+      self.price = (amount - fee - other) / quantity
+    else
+      self.amount = (self.price * self.quantity.abs) + self.fee + self.other
+    end
   end
 
   def set_initial_tax_balances!
