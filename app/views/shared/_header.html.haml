@@ -14,7 +14,10 @@
           %button{id: 'settings-link', class: 'nav-link dropdown-toggle', "role": "button", "data-bs-toggle": "dropdown", "aria-expanded": "false"}
             %i.bi.bi-gear.p-2
           %ul.dropdown-menu.dropdown-menu-end
-            %li.dropdown-item= link_to "Sign out", sign_out_path, method: :delete, data: { "turbo-method": :delete }
+            %li.dropdown-item= link_to "Accounts", accounts_path
+            %li.dropdown-item= link_to "Securities", securities_path
+            %li.dropdown-divider
+            %li.dropdown-item= link_to "Sign out", sign_out_path, method: :delete, class: 'btn btn-secondary', data: { "turbo-method": :delete }
 
 
 
