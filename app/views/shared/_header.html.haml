@@ -1,19 +1,21 @@
 %nav.navbar.main.navbar-expand-lg.navbar-dark(style = "background-color: #111" id = 'main-navbar')
   .container-fluid
     = link_to "Gain", root_path, class: 'navbar-brand'
-    .d-flex
-      %ul.navbar-nav.me-auto
-        - if @account
-          %li.nav-item
-            = @account.title
-        %li.nav-item
-          = link_to accounts_path, id: 'settings-link' do
-            %i.bi.bi-gear.p-2
 
-  / - if signed_in?
-  /   = button_to 'Sign out', sign_out_path, method: :delete
-  / - else
-  /   = link_to 'Sign in', sign_in_path
+    %button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation")
+      %span.navbar-toggler-icon
+
+
+    .navbar-nav.ml-auto
+      - if @account
+        .navbar-text= @account.title
+      .collapse.navbar-collapse#navbarSupportedContent
+        .dropdown
+          %button{id: 'settings-link', class: 'nav-link dropdown-toggle', "role": "button", "data-bs-toggle": "dropdown", "aria-expanded": "false"}
+            %i.bi.bi-gear.p-2
+          %ul.dropdown-menu.dropdown-menu-end
+            %li.dropdown-item= link_to "Sign out", sign_out_path, method: :delete, data: { "turbo-method": :delete }
+
 
 
 

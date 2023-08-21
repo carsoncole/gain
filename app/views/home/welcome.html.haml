@@ -3,7 +3,10 @@
 %h1#home.text-center Gain
 
 - if signed_in?
-  .text-center= link_to "Sign out", sign_out_path, method: :post, data: { "turbo-method": :delete }
+  .text-center
+    = link_to "Accounts", accounts_path
+    \|
+    = link_to "Sign out", sign_out_path, method: :post, data: { "turbo-method": :delete }
 - else
   .text-center= link_to "Sign in", sign_in_path
 
