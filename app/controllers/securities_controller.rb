@@ -4,7 +4,7 @@ class SecuritiesController < ApplicationController
 
   # GET /securities or /securities.json
   def index
-    @securities = current_user.securities.all
+    @securities = current_user.securities.order(:name)
   end
 
   # GET /securities/1 or /securities/1.json
