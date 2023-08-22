@@ -14,5 +14,11 @@ FactoryBot.define do
     factory :buy_trade do
       trade_type { 'Buy' }
     end
+
+    factory :split_trade do
+      trade_type { 'Split' }
+      price { nil }
+      quantity { nil }
+    end
   end
 end

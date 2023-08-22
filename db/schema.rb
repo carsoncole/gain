@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_22_190744) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
@@ -62,11 +62,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_28_155322) do
     t.integer "security_id", null: false
     t.decimal "price", precision: 15, scale: 5
     t.decimal "quantity", precision: 15, scale: 2
-    t.decimal "fee", precision: 15, scale: 2, default: "0.0"
-    t.decimal "other", precision: 15, scale: 2, default: "0.0"
+    t.decimal "fee", precision: 15, scale: 2
+    t.decimal "other", precision: 15, scale: 2
     t.decimal "amount", precision: 15, scale: 2
-    t.decimal "quantity_balance", precision: 15, scale: 5, default: "0.0"
-    t.decimal "quantity_tax_balance", precision: 15, scale: 5, default: "0.0"
+    t.decimal "quantity_balance", precision: 15, scale: 5
+    t.decimal "quantity_tax_balance", precision: 15, scale: 5
     t.decimal "cost_tax_balance", precision: 15, scale: 2
     t.string "trade_type"
     t.datetime "created_at", null: false

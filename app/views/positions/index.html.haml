@@ -14,8 +14,8 @@
       %th.text-end Balance
   %tbody
     - @positions.each do |s|
-      - position = @account.trades.where(security: s).order(date: :asc, id: :asc).last
-      - cost = position.security.trades.where(account_id: position.account_id).sum(:cost_tax_balance)
+      - position = @account.trades.buy_sell.where(security: s).order(date: :asc, id: :asc).last
+      - cost = position.security.trades.buy_sell.where(account_id: position.account_id).sum(:cost_tax_balance)
       - next if position.quantity_balance == 0
       %tr
         %td= position.security.name

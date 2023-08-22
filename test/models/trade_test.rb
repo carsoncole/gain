@@ -21,12 +21,21 @@ class TradeTest < ActiveSupport::TestCase
   test "buy?" do
     trade = build(:trade, trade_type: 'Buy')
     assert trade.buy?
+    assert trade.buy_or_sell?
     assert_not trade.sell?
   end
 
   test "sell?" do
     trade = build(:trade, trade_type:'Sell')
     assert trade.sell?
+    assert trade.buy_or_sell?
+  end
+
+  test "split not requiring price and quantity" do
+    trade = build(:split_trade, security: @security)
+    assert trade.valid?
+    assert_nil trade.amount
+    assert trade.save
   end
 
   test "amount calculation with no fees, commissions" do
@@ -39,10 +48,23 @@ class TradeTest < ActiveSupport::TestCase
     assert_equal 1035, trade.amount
   end
 
-  test "price calculation with amount provided" do
+  test "price recalculation when amount provided" do
     trade = create(:trade, account: @account, quantity: 10, price: 10, fee: 10, other: 10, amount: 200)
     assert_equal 200, trade.amount
     assert_equal 18, trade.price
+  end
+
+  test "amount on sell less fees" do
+    trade = create(:sell_trade, account: @account, quantity: 10, price: 10, fee: 10, other: 10)
+    assert_equal 80, trade.amount
+  end
+
+  test "price adjusted off amount" do
+    trade = create(:buy_trade, account: @account, quantity: 15, price: 10, fee: 10, other: 10, amount: 237.5)
+    assert_equal 14.5, trade.price
+
+    trade = create(:sell_trade, account: @account, quantity: 15, price: 10, fee: 10, other: 10, amount: 300)
+    assert_equal 21.33333, trade.price
   end
 
   test "quantity balance for sequential BUY trades" do
@@ -142,5 +164,16 @@ class TradeTest < ActiveSupport::TestCase
     trade_2.update(trade_type: 'Sell')
     assert_equal -5, trade_2.reload.quantity_balance
     assert_equal 20, trade_3.reload.quantity_balance
+  end
+
+  test "quantity balance after deleted trade" do
+    trade_1 = create(:trade, account: @account, quantity: 10, security: @security, date: Date.today - 5.days)
+    trade_2 = create(:trade, account: @account, quantity: 15, security: @security, date: Date.today - 3.days)
+    trade_3 = create(:trade, account: @account, quantity: 20, security: @security, date: Date.today - 3.days)
+    trade_4 = create(:trade, account: @account, quantity: 25, security: @security)
+    trade_1.destroy
+    assert_equal 15, trade_2.reload.quantity_balance
+    assert_equal 35, trade_3.reload.quantity_balance
+    assert_equal 60, trade_4.reload.quantity_balance
   end
 end

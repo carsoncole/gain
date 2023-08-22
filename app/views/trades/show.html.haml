@@ -28,7 +28,7 @@
     %td.text-end= number_to_currency @trade.amount
   %tr
     %th Security balance:
-    %td.text-end= @trade.quantity_balance
+    %td.text-end= number_with_delimiter(@trade.quantity_balance, precision: 5, strip_insignificant_zeros: true)
 
 %br
 = link_to account_trade_path(@account, @trade), id: "delete-trade", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do

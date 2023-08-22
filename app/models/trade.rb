@@ -5,19 +5,24 @@ class Trade < ApplicationRecord
 
   attr_accessor :is_recalc
 
-  validates :date, :trade_type, :security_id, :quantity, :price, presence: true
+  validates :date, :trade_type, :security_id, presence: true
+  validates :price, :quantity, presence: true, if: -> { trade_type == ['Buy', 'Sell'] }
+
+  scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
 
   TYPES = [
     'Buy',
-    'Sell'
+    'Sell',
+    'Split'
   ]
 
   after_initialize :set_defaults!
-  before_validation :set_quantity_sign!
+  before_validation :set_sign!
   before_validation :set_amount_or_price!
 
   # Update quantity balances
   after_save :calculate_related_quantity_balances!, unless: :is_recalc
+  after_destroy :calculate_related_quantity_balances!, unless: :is_recalc
 
   # Update quantity and cost tax balances
   after_commit :calculate_gains_and_losses!, unless: :is_recalc
@@ -37,15 +42,37 @@ class Trade < ApplicationRecord
     trade_type == 'Sell' ? true : false
   end
 
-  def set_quantity_sign!
-    self.quantity = -self.quantity.abs if self.trade_type == 'Sell'
+  def buy_or_sell?
+    buy? || sell?
+  end
+
+  def set_sign!
+    if self.trade_type == 'Sell'
+      self.quantity = -self.quantity.abs
+    elsif self.trade_type == 'Buy'
+      self.quantity = self.quantity.abs
+      self.amount = self.amount.abs if self.amount.present? && self.amount != 0
+    end
   end
 
   def set_amount_or_price!
+    if buy_or_sell?
+      self.fee ||= 0
+      self.other ||= 0
+    end
+
     if self.amount.present?
-      self.price = (amount - fee - other) / quantity
+      if buy?
+        self.price = (amount - fee - other) / quantity
+      elsif sell?
+        self.price = (amount.abs + fee + other) / quantity.abs
+      end
     else
-      self.amount = (self.price * self.quantity.abs) + self.fee + self.other
+      if buy?
+        self.amount = (self.price * self.quantity.abs) + self.fee + self.other
+      elsif sell?
+        self.amount = (self.price * self.quantity.abs) - self.fee - self.other
+      end
     end
   end
 
@@ -63,14 +90,14 @@ class Trade < ApplicationRecord
   end
 
   def related_security_trades
-    security.trades.where("account_id = ?", self.account_id).order(date: :asc, created_at: :asc)
+    security.trades.buy_sell.where("account_id = ?", self.account_id).order(date: :asc, created_at: :asc)
   end
 
   def related_counter_trades
     if trade_type == 'Buy'
-      account.trades.where("security_id = ? AND (quantity_tax_balance < 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
+      account.trades.buy_sell.where("security_id = ? AND (quantity_tax_balance < 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
     elsif trade_type == 'Sell'
-      account.trades.where("security_id = ? AND (quantity_tax_balance > 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
+      account.trades.buy_sell.where("security_id = ? AND (quantity_tax_balance > 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
     end
   end
 
@@ -83,7 +110,7 @@ class Trade < ApplicationRecord
   end
 
   def cost_per_unit
-    (amount / quantity).abs
+    (amount / quantity).abs if buy_or_sell?
   end
 
   def calculate_gains_and_losses!
@@ -138,58 +165,6 @@ class Trade < ApplicationRecord
     end
     self.save if self.changed?
   end
-
-
-  # def offset_trades!
-  #   self.is_recalc = true
-  #   return unless related_counter_trades.any?
-
-  #   related_counter_trades.each do |t|
-  #     t.is_recalc = true
-  #     return if quantity_tax_balance == 0
-
-  #     if t.quantity_tax_balance + quantity_tax_balance == 0
-
-  #       quantity_used = quantity_tax_balance.abs
-  #       gain = -(t.cost_tax_balance + cost_tax_balance)
-
-  #       t.quantity_tax_balance, t.cost_tax_balance, self.quantity_tax_balance, self.cost_tax_balance = 0,0,0,0
-
-  #     elsif sell? && quantity_tax_balance.abs > t.quantity_tax_balance.abs
-
-  #       quantity_used = t.quantity_tax_balance
-  #       cost = t.cost_tax_balance
-  #       proceeds = quantity_used * cost_per_unit
-  #       gain = proceeds - cost
-
-  #       self.quantity_tax_balance +=  t.quantity_tax_balance
-  #       self.cost_tax_balance += -proceeds
-  #       t.quantity_tax_balance, t.cost_tax_balance = 0, 0
-
-  #     elsif sell? && t.quantity_tax_balance.abs > quantity_tax_balance.abs
-
-  #       quantity_used = -quantity_tax_balance
-  #       cost = quantity_used * t.cost_per_unit
-  #       proceeds = quantity_used * cost_per_unit
-  #       gain = proceeds - cost
-
-  #     else # t.quantity_tax_balance.abs > quantity_tax_balance.abs
-  #       quantity_used = quantity_tax_balance
-  #       total_cost = quantity_used * t.cost_per_unit
-  #       proceeds = cost_tax_balance
-
-  #       gain = -(proceeds - total_cost)
-
-  #       t.quantity_tax_balance += quantity_tax_balance
-  #       t.cost_tax_balance -= total_cost
-
-  #       self.quantity_tax_balance, self.cost_tax_balance = 0, 0
-  #     end
-  #     gain_losses.create(account_id: t.account_id, date: self.date, quantity: quantity_used, amount: gain, source_trade_id: t.id)
-  #     t.save
-  #   end
-  #   self.save if self.changed?
-  # end
 
   def average_security_cost_per_share
     amount / quantity
