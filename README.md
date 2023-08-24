@@ -8,11 +8,7 @@ Ruby and Ruby on Rails are the primary requirements.
 
 ## Installation
 
-To get started, create the database with `bin/rails db:create` and run the migrations with `bin/rails db:migrate`.
+To get started, add a database configuration file in `config/database.yml`. The file `database_sample.yml` provides an example file. Create the database with `bin/rails db:create` and run the migrations with `bin/rails db:migrate`. SQLite is the default database.
 
-
-### Database
-
-By default, the application use SQLite, but can be configured for other databases in `database.yml`. The file `database_sample.yml` provides an example file.
-
+Multiple users can sign up at `/sign_up`, but to disable the ability for sign ups, modify the Clearance settings in `clearance.rb`.
 
