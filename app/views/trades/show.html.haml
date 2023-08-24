@@ -1,39 +1,52 @@
-%p#notice= notice
+.offset-3.col-lg-6
+  %p#notice= notice
 
-%table.table
-  %tbody
-  %tr
-    %th Date:
-    %td.text-end= @trade.date
-  %tr
-    %th
-    %td.text-end= @trade.trade_type
-  %tr
-    %th Security:
-    %td.text-end= @trade.security.name
-  %tr
-    %th Price:
-    %td.text-end= number_to_currency @trade.price, precision: 5, strip_insignificant_zeros: true
-  %tr
-    %th Quantity:
-    %td.text-end= number_with_delimiter @trade.quantity, precision: 2
-  %tr
-    %th Fee:
-    %td.text-end= number_to_currency @trade.fee
-  %tr
-    %th Other:
-    %td.text-end= number_to_currency @trade.other
-  %tr
-    %th Amount:
-    %td.text-end= number_to_currency @trade.amount
-  %tr
-    %th Security balance:
-    %td.text-end= number_with_delimiter(@trade.quantity_balance, precision: 5, strip_insignificant_zeros: true)
+  %table.table
+    %tbody
+    %tr
+      %th Date:
+      %td.text-end= @trade.date
+    %tr
+      %th
+      %td.text-end= @trade.trade_type
+    %tr
+      %th Security:
+      %td.text-end= @trade.security.name
 
-%br
-= link_to account_trade_path(@account, @trade), id: "delete-trade", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do
-  %i.bi.bi-trash
-= link_to edit_account_trade_path(@account, @trade), id: "edit-trade" do
-  %i.bi.bi-pencil
-\|
-= link_to 'Back', account_trades_path(@account)
+    - if @trade.buy_or_sell?
+      %tr
+        %th Price:
+        %td.text-end= number_to_currency @trade.price, precision: 5, strip_insignificant_zeros: true
+      %tr
+        %th Quantity:
+        %td.text-end= number_with_delimiter @trade.quantity, precision: 2
+      %tr
+        %th Fee:
+        %td.text-end= number_to_currency @trade.fee
+      %tr
+        %th Other:
+        %td.text-end= number_to_currency @trade.other
+      %tr
+        %th Amount:
+        %td.text-end= number_to_currency @trade.amount
+      %tr
+        %th Security balance:
+        %td.text-end= number_with_delimiter(@trade.quantity_balance, precision: 5, strip_insignificant_zeros: true)
+
+    - else
+      %tr
+        %th Conversion new shares:
+        %td.text-end= number_with_delimiter @trade.conversion_new_shares, precision: 2
+      %tr
+        %th Conversion security:
+        %td.text-end= @trade.security.name
+      %tr
+        %th Split new shares:
+        %td.text-end= number_with_delimiter @trade.split_new_shares, precision: 2
+  %br
+  = link_to account_trade_path(@account, @trade), id: "delete-trade", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do
+    %i.bi.bi-trash
+  = link_to edit_account_trade_path(@account, @trade), id: "edit-trade" do
+    %i.bi.bi-pencil
+  \|
+  = link_to 'Back', account_trades_path(@account)

@@ -6,4 +6,9 @@ class Security < ApplicationRecord
   validates :name, :symbol, presence: true
 
   before_save { |security| security.symbol = security.symbol.upcase }
+
+  def splits(account)
+    trades.splits.where(account_id: account.id)
+  end
+
 end

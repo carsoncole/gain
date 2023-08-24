@@ -171,5 +171,4 @@ class GainLossTest < ActiveSupport::TestCase
     assert_equal 10, @account.gain_losses.count
     assert_equal 0, @account.gain_losses.sum(:amount)
   end
-
 end

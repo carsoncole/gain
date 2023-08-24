@@ -5,6 +5,4 @@ class Position
     # account.trades.order(id: :desc).group(:security_id)
     account.trades.buy_sell.distinct.pluck(:security_id)
   end
-
-
 end

@@ -176,4 +176,26 @@ class TradeTest < ActiveSupport::TestCase
     assert_equal 35, trade_3.reload.quantity_balance
     assert_equal 60, trade_4.reload.quantity_balance
   end
+
+  test "split trade followed by buy and sell" do
+    trade_1 = create(:buy_trade, quantity: 100)
+    trade_2 = create(:split_trade, account: trade_1.account, security_id: trade_1.security_id, split_new_shares: 1000)
+    assert_equal 1000, trade_2.reload.quantity_balance
+    trade_3 = create(:buy_trade, quantity: 200, account: trade_1.account, security_id: trade_1.security_id)
+    assert_equal 1200, trade_3.reload.quantity_balance
+    trade_4 = create(:sell_trade, quantity: 50, account: trade_1.account, security_id: trade_1.security_id)
+    assert_equal 1150, trade_4.reload.quantity_balance
+  end
+
+  test "buy tax values post split" do
+    trade_1 = create(:buy_trade, quantity: 10, price: 10)
+    assert_equal 10, trade_1.reload.quantity_tax_balance
+    trade_2 = create(:split_trade, account: trade_1.account, security_id: trade_1.security_id, split_new_shares: 100)
+
+    assert_equal 100, trade_1.reload.quantity_tax_balance
+    assert_equal 100, trade_1.cost_tax_balance
+    trade_3 = create(:buy_trade, account: trade_1.account, security_id: trade_1.security_id, quantity: 100, price: 2)
+    assert_equal 100, trade_3.reload.quantity_tax_balance
+    assert_equal 200, trade_3.reload.cost_tax_balance
+  end
 end

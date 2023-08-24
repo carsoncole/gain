@@ -1,25 +1,29 @@
-%h1 Positions
+.offset-lg-2.col-lg-8
+  %h1 Positions
 
-/ %table.table
-/   - @positions.each do |p|
-/     %tr
-/       %td= p.inspect
+  / %table.table
+  /   - @positions.each do |p|
+  /     %tr
+  /       %td= p.inspect
 
-%table.table
-  %thead
-    %tr
-      %th
-      %th.text-end Cost
-      %th.text-end Avg Price
-      %th.text-end Balance
-  %tbody
-    - @positions.each do |s|
-      - position = @account.trades.buy_sell.where(security: s).order(date: :asc, id: :asc).last
-      - cost = position.security.trades.buy_sell.where(account_id: position.account_id).sum(:cost_tax_balance)
-      - next if position.quantity_balance == 0
+  %table.table
+    %thead
       %tr
-        %td= position.security.name
-        %td.text-end= number_to_currency(cost, precision: 2, strip_insignificant_zeros: true)
-        %td.text-end= number_with_precision(cost / position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-        %td.text-end= number_with_precision(position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %th
+        %th.text-end Cost
+        %th.text-end Avg Price
+        %th.text-end Balance
+    %tbody
+      - @positions.each do |s|
+        - position = @account.trades.buy_sell.where(security: s).order(date: :asc, id: :asc).last
+        - cost = position.related_buy_sell_trades.sum(:cost_tax_balance)
+        - split = nil
+        - if Security.find(s).trades.splits.any?
+          - split = Security.find(s).trades.splits.last.split_new_shares
+        - next if position.quantity_balance == 0
+        %tr
+          %td= position.security.name
+          %td.text-end= number_to_currency(cost, precision: 2, strip_insignificant_zeros: true)
+          %td.text-end= number_with_precision(cost / position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+          %td.text-end= number_with_precision(split || position.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
 

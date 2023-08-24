@@ -19,6 +19,7 @@ FactoryBot.define do
       trade_type { 'Split' }
       price { nil }
       quantity { nil }
+      split_new_shares { 1000 }
     end
   end
 end

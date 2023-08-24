@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_22_190744) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_22_211521) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
@@ -71,6 +71,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_22_190744) do
     t.string "trade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "split_new_shares"
+    t.integer "conversion_security_id"
+    t.decimal "conversion_new_shares"
     t.index ["account_id", "security_id"], name: "index_trades_on_account_id_and_security_id"
     t.index ["account_id"], name: "index_trades_on_account_id"
     t.index ["security_id"], name: "index_trades_on_security_id"
