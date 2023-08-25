@@ -35,8 +35,11 @@
 
     - else
       %tr
-        %th Conversion new shares:
-        %td.text-end= number_with_delimiter @trade.conversion_new_shares, precision: 2
+        %th Conversion new share quantity:
+        %td.text-end= number_with_delimiter @trade.conversion_new_quantity, precision: 2
+      %tr
+        %th Conversion from share quantity:
+        %td.text-end= number_with_delimiter @trade.conversion_from_quantity, precision: 2
       %tr
         %th Conversion security:
         %td.text-end= @trade.security.name
