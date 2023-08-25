@@ -18,15 +18,22 @@ class Trade < ApplicationRecord
     'Conversion'
   ]
 
-  after_initialize :set_defaults!
-  before_validation :set_sign!
-  before_validation :set_amount_or_price!
+  # Trade steps
+  # calculate_quantity_balances
+  # => all trades set balances
+  # calculate_gains_and_losses
+  # => all trades set initial tax balances, and split trade values
+  # => all trades process gains and losses
 
-  # Update quantity balances
+  after_initialize :set_defaults!
+  before_validation :set_sign!, unless: :is_recalc
+  before_save :set_amount_or_price!, unless: :is_recalc
   after_save :calculate_quantity_balances!, unless: :is_recalc
-  after_save :adjust_tax_balances_for_splits!, unless: :is_recalc
+
   after_destroy :calculate_quantity_balances!
-  after_destroy :adjust_tax_balances_for_splits!
+
+  # after_save :adjust_tax_balances_for_splits!, unless: :is_recalc
+  # after_destroy :adjust_tax_balances_for_splits!
 
   # Update quantity and cost tax balances
   after_commit :calculate_gains_and_losses!, unless: :is_recalc
@@ -36,6 +43,18 @@ class Trade < ApplicationRecord
   def set_defaults!
     self.date ||= Date.today
     self.trade_type ||= 'Buy'
+  end
+
+  def set_values!
+    related_security_trades.each do |t|
+      t.calculate_quantity_balance!
+
+      self.quantity_tax_balance = self.quantity if buy_or_sell?
+      self.cost_tax_balance = self.amount * (buy? ? 1 : -1) if buy_or_sell?
+
+      t.is_recalc = true
+      t.save if t.changed?
+    end
   end
 
   def buy?
@@ -88,33 +107,48 @@ class Trade < ApplicationRecord
     end
   end
 
+  def calculate_quantity_balance!
+    if buy_or_sell?
+      self.quantity_balance = prior_quantity_balance + quantity
+    elsif split?
+      self.quantity_balance = split_new_shares
+    end
+  end
+
+  def calculate_quantity_balances!
+    related_security_trades.each do |t|
+      t.calculate_quantity_balance!
+      t.is_recalc = true
+      t.save if t.changed?
+    end
+  end
+
   def set_initial_tax_balances!
     self.quantity_tax_balance = self.quantity if buy_or_sell?
     self.cost_tax_balance = self.amount * (buy? ? 1 : -1) if buy_or_sell?
+    adjust_tax_balances_for_splits! if split?
   end
 
   def adjust_tax_balances_for_splits!
-    if security.splits(account).any?
-      split = security.splits(account).first
-      trades_to_process = related_security_trades.where("quantity_tax_balance <> 0 AND date < ?", date)
-      split_ratio = split.split_new_shares / 1 #quantity_balance
-      puts "*"*200
-      puts "split_ratio"
-      puts split_ratio
-      shares_distributed = 0
-      trades_to_process.each do |rst|
-        rst.is_recalc = true
-        if rst == trades_to_process.last
-          rst.quantity_tax_balance = split.split_new_shares - shares_distributed
-        else
-          rst.quantity_tax_balance *= split_ratio
-          shares_distributed += rst.quantity_tax_balance
-        end
-        puts "shares distributed"
-        puts shares_distributed
-        rst.save
+    puts "*"*80
+    puts "adjusting for splits"
+    puts self.inspect
+    trades_to_process = related_security_trades.where("quantity_tax_balance <> 0 AND date < ?", date)
+    split_ratio = split_new_shares / quantity_balance
+    shares_distributed = 0
+    trades_to_process.each do |rst|
+      rst.is_recalc = true
+      if rst == trades_to_process.last
+        rst.quantity_tax_balance = split_new_shares - shares_distributed
+      else
+        rst.quantity_tax_balance *= split_ratio
+        shares_distributed += rst.quantity_tax_balance
       end
+      puts "shares distributed"
+      puts shares_distributed
+      rst.save
     end
+
   end
 
   def quantity_balance_needs_updating?
@@ -156,12 +190,11 @@ class Trade < ApplicationRecord
   def calculate_gains_and_losses!
     return unless buy_sell_split?
     # reset all balances to initial values
-    related_security_trades.each do |rst|
-      rst.set_initial_tax_balances!
-      rst.adjust_tax_balances_for_splits!
-      rst.is_recalc = true
-      rst.save if rst.changed?
-    end
+    # related_security_trades.each do |rst|
+    #   rst.set_initial_tax_balances!
+    #   rst.is_recalc = true
+    #   rst.save if rst.changed?
+    # end
 
     # process all related trades for tax balances
     account.gain_losses.joins(:trade).where("trades.security_id = ?", self.security_id).destroy_all  # destroy existing gains/losses
@@ -212,19 +245,5 @@ class Trade < ApplicationRecord
     amount / quantity
   end
 
-  def calculate_quantity_balance!
-    if buy_or_sell?
-      self.quantity_balance = prior_quantity_balance + quantity
-    elsif split?
-      self.quantity_balance = split_new_shares
-    end
-  end
 
-  def calculate_quantity_balances!
-    related_security_trades.each do |t|
-      t.calculate_quantity_balance!
-      t.is_recalc = true
-      t.save if t.changed?
-    end
-  end
 end

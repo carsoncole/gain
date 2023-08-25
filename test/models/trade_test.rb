@@ -8,7 +8,7 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "quantity sign" do
-    trade = build(:trade, trade_type: 'Sell')
+    trade = build(:sell_trade)
     assert_equal 100, trade.quantity
     trade.valid?
     assert_equal -100, trade.quantity
@@ -19,14 +19,14 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "buy?" do
-    trade = build(:trade, trade_type: 'Buy')
+    trade = build(:buy_trade)
     assert trade.buy?
     assert trade.buy_or_sell?
     assert_not trade.sell?
   end
 
   test "sell?" do
-    trade = build(:trade, trade_type:'Sell')
+    trade = build(:sell_trade)
     assert trade.sell?
     assert trade.buy_or_sell?
   end
