@@ -18,43 +18,17 @@ class Trade < ApplicationRecord
     'Conversion'
   ]
 
-  # Trade steps
-  # calculate_quantity_balances
-  # => all trades set balances
-  # calculate_gains_and_losses
-  # => all trades set initial tax balances, and split trade values
-  # => all trades process gains and losses
-
   after_initialize :set_defaults!
   before_validation :set_sign!, unless: :is_recalc
   before_save :set_amount_or_price!, unless: :is_recalc
   after_save :calculate_quantity_balances!, unless: :is_recalc
-
+  after_save :calculate_gains_and_losses!, unless: :is_recalc
   after_destroy :calculate_quantity_balances!
-
-  # after_save :adjust_tax_balances_for_splits!, unless: :is_recalc
-  # after_destroy :adjust_tax_balances_for_splits!
-
-  # Update quantity and cost tax balances
-  after_commit :calculate_gains_and_losses!, unless: :is_recalc
-
-  # after_commit :offset_trades!, unless: :is_recalc
+  after_destroy :calculate_gains_and_losses!, unless: :is_recalc
 
   def set_defaults!
     self.date ||= Date.today
     self.trade_type ||= 'Buy'
-  end
-
-  def set_values!
-    related_security_trades.each do |t|
-      t.calculate_quantity_balance!
-
-      self.quantity_tax_balance = self.quantity if buy_or_sell?
-      self.cost_tax_balance = self.amount * (buy? ? 1 : -1) if buy_or_sell?
-
-      t.is_recalc = true
-      t.save if t.changed?
-    end
   end
 
   def buy?
@@ -107,14 +81,6 @@ class Trade < ApplicationRecord
     end
   end
 
-  def calculate_quantity_balance!
-    if buy_or_sell?
-      self.quantity_balance = prior_quantity_balance + quantity
-    elsif split?
-      self.quantity_balance = split_new_shares
-    end
-  end
-
   def calculate_quantity_balances!
     related_security_trades.each do |t|
       t.calculate_quantity_balance!
@@ -123,17 +89,21 @@ class Trade < ApplicationRecord
     end
   end
 
+  def calculate_quantity_balance!
+    if buy_or_sell?
+      self.quantity_balance = prior_quantity_balance + quantity
+    elsif split?
+      self.quantity_balance = split_new_shares
+    end
+  end
+
   def set_initial_tax_balances!
     self.quantity_tax_balance = self.quantity if buy_or_sell?
     self.cost_tax_balance = self.amount * (buy? ? 1 : -1) if buy_or_sell?
-    adjust_tax_balances_for_splits! if split?
   end
 
   def adjust_tax_balances_for_splits!
-    puts "*"*80
-    puts "adjusting for splits"
-    puts self.inspect
-    trades_to_process = related_security_trades.where("quantity_tax_balance <> 0 AND date < ?", date)
+    trades_to_process = related_security_trades.where("quantity_tax_balance <> 0 AND (date < ? OR (date = ? AND created_at < ?))", date, date, created_at)
     split_ratio = split_new_shares / quantity_balance
     shares_distributed = 0
     trades_to_process.each do |rst|
@@ -142,10 +112,8 @@ class Trade < ApplicationRecord
         rst.quantity_tax_balance = split_new_shares - shares_distributed
       else
         rst.quantity_tax_balance *= split_ratio
-        shares_distributed += rst.quantity_tax_balance
+        shares_distributed += rst.quantivty_tax_balance
       end
-      puts "shares distributed"
-      puts shares_distributed
       rst.save
     end
 
@@ -189,16 +157,13 @@ class Trade < ApplicationRecord
 
   def calculate_gains_and_losses!
     return unless buy_sell_split?
-    # reset all balances to initial values
-    # related_security_trades.each do |rst|
-    #   rst.set_initial_tax_balances!
-    #   rst.is_recalc = true
-    #   rst.save if rst.changed?
-    # end
 
-    # process all related trades for tax balances
     account.gain_losses.joins(:trade).where("trades.security_id = ?", self.security_id).destroy_all  # destroy existing gains/losses
     related_security_trades.each do |rst|
+      rst.set_initial_tax_balances!
+      rst.is_recalc = true
+      rst.save if rst.changed?
+      rst.adjust_tax_balances_for_splits! if rst.split?
       rst.process_gains_and_losses!
     end
   end
@@ -217,24 +182,39 @@ class Trade < ApplicationRecord
         gain = -(cost_tax_balance + t.cost_tax_balance)
         t.cost_tax_balance, self.cost_tax_balance = 0,0
 
-      elsif quantity_tax_balance.abs > t.quantity_tax_balance.abs
-        quantity_used = t.quantity_tax_balance
-        t.quantity_tax_balance = 0
-        self.quantity_tax_balance += quantity_used
-        proceeds = self.cost_per_unit * quantity_used
-        gain = proceeds - t.cost_tax_balance
-        t.cost_tax_balance = 0
-        self.cost_tax_balance += proceeds
-
-      else # quantity_tax_balance.abs < t.quantity_tax_balance.abs
+      # SELL
+      elsif sell? && quantity_tax_balance.abs < t.quantity_tax_balance.abs
+        t.quantity_tax_balance += quantity_tax_balance
+        t.cost_tax_balance += t.cost_per_unit * quantity_tax_balance
         quantity_used = quantity_tax_balance
-        t.quantity_tax_balance += quantity_used
-        self.quantity_tax_balance = 0
-        proceeds = cost_tax_balance
-        gain = -(proceeds - (t.cost_per_unit * quantity_used))
-        t.cost_tax_balance += t.cost_per_unit * quantity_used
-        self.cost_tax_balance = 0
+        proceeds = -cost_tax_balance
+        gain = proceeds - (t.cost_per_unit * -quantity_used)
+        self.quantity_tax_balance, self.cost_tax_balance = 0,0
+
+      elsif sell? # quantity_tax_balance.abs > t.quantity_tax_balance.abs
+        self.quantity_tax_balance += t.quantity_tax_balance
+        self.cost_tax_balance += (t.quantity_tax_balance * self.cost_per_unit)
+        quantity_used = -t.quantity_tax_balance
+        proceeds = -(quantity_used * self.cost_per_unit)
+        gain = proceeds - t.cost_tax_balance
+        t.quantity_tax_balance, t.cost_tax_balance = 0.0
+
+      # BUY
+      elsif buy? && quantity_tax_balance < t.quantity_tax_balance.abs
+        t.quantity_tax_balance += quantity_tax_balance
+        t.cost_tax_balance += quantity_tax_balance * t.cost_per_unit
+        quantity_used = quantity_tax_balance
+        gain = cost_tax_balance - (quantity_used * t.cost_per_unit)
+        self.quantity_tax_balance, self.cost_tax_balance = 0,0
+
+      elsif buy? # quantity_tax_balance > t.quantity_tax_balance.abs
+        self.quantity_tax_balance += t.quantity_tax_balance
+        self.cost_tax_balance += t.quantity_tax_balance * cost_per_unit
+        quantity_used = -t.quantity_tax_balance
+        gain = (quantity_used * t.cost_per_unit) - (quantity_used * cost_per_unit)
+        t.quantity_tax_balance, t.cost_tax_balance = 0,0
       end
+
       gain_losses.create(account: t.account, date: date, quantity: quantity_used, amount: gain, source_trade_id: t.id)
       t.save
     end

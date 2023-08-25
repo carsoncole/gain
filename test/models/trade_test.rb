@@ -10,12 +10,16 @@ class TradeTest < ActiveSupport::TestCase
   test "quantity sign" do
     trade = build(:sell_trade)
     assert_equal 100, trade.quantity
-    trade.valid?
+    trade.save
     assert_equal -100, trade.quantity
+  end
 
-    trade.quantity = -200
-    trade.valid?
-    assert_equal -200, trade.quantity
+  test "quantity sign on updates" do
+    trade = create(:sell_trade)
+    trade.update(quantity: 100)
+    assert_equal -100, trade.quantity
+    trade.update(amount: -1000)
+    assert_equal -100, trade.quantity
   end
 
   test "buy?" do
@@ -29,6 +33,12 @@ class TradeTest < ActiveSupport::TestCase
     trade = build(:sell_trade)
     assert trade.sell?
     assert trade.buy_or_sell?
+  end
+
+  test "split?" do
+    trade = build(:split_trade)
+    assert trade.split?
+    assert_not trade.buy_or_sell?
   end
 
   test "split not requiring price and quantity" do
@@ -81,23 +91,23 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "quantity balance for sequential SELL trades" do
-    trade = create(:trade, account: @account, security: @security, quantity: 25, trade_type: 'Sell')
+    trade = create(:sell_trade, account: @account, security: @security, quantity: 25)
     assert_equal -25, trade.reload.quantity_balance
 
     # additional trades in other securities/accounts
     create(:trade, account: @account, quantity: 1000, security: @security_2)
     create(:trade)
 
-    trade = create(:trade, account: @account, quantity: 15, security: @security, trade_type: 'Sell')
+    trade = create(:sell_trade, account: @account, quantity: 15, security: @security)
     assert_equal -40, trade.reload.quantity_balance
   end
 
   test "quantity balance for buys and sells with negative holdings" do
     trade_1 = create(:trade, account: @account, security: @security, quantity: 100)
-    trade_2 = create(:trade, account: @account, security: @security, quantity: 150, trade_type: 'Sell')
+    trade_2 = create(:sell_trade, account: @account, security: @security, quantity: 150)
     assert_equal -50, trade_2.reload.quantity_balance
 
-    trade_3 = create(:trade, account: @account, security: @security, quantity: 100, trade_type: 'Sell')
+    trade_3 = create(:sell_trade, account: @account, security: @security, quantity: 100)
     assert_equal -150, trade_3.reload.quantity_balance
 
     trade_4 = create(:trade, account: @account, security: @security, quantity: 200)
