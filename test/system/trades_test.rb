@@ -24,7 +24,7 @@ class TradesTest < ApplicationSystemTestCase
     fill_in "Quantity", with: @trade.quantity
     select "#{@trade.security.name}", from: "trade_security_id"
     select @trade.trade_type, from: "trade_trade_type"
-    click_on "Create Trade"
+    click_on "Create Trade", match: :first
 
     assert_text "Trade was successfully created"
     assert_selector "h1", text: "Trades"
@@ -42,7 +42,7 @@ class TradesTest < ApplicationSystemTestCase
     fill_in "Quantity", with: @trade.quantity
     select "#{@trade.security.name}", from: "trade_security_id"
     select @trade.trade_type, from: "trade_trade_type"
-    click_on "Update Trade"
+    click_on "Update Trade", match: :first
 
     assert_text "Trade was successfully updated"
   end

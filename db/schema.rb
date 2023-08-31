@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_27_182141) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_31_181705) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
@@ -80,8 +80,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_27_182141) do
     t.decimal "other", precision: 15, scale: 2
     t.decimal "amount", precision: 15, scale: 2
     t.decimal "quantity_balance", precision: 15, scale: 5
-    t.decimal "quantity_tax_balance", precision: 15, scale: 5
-    t.decimal "cost_tax_balance", precision: 15, scale: 2
     t.string "trade_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

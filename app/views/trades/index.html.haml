@@ -14,8 +14,6 @@
       %th.text-end Qty
       %th.text-end Amount
       %th.text-end Qty Bal
-      %th.text-end.tax-data Qty Tax Bal
-      %th.text-end.tax-data Cost Tax Bal
       %th.d-print-none
 
   %tbody
@@ -29,8 +27,6 @@
           %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
           %td.text-end= number_to_currency(trade.amount)
           %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_with_precision(trade.quantity_tax_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_to_currency(trade.cost_tax_balance,precision: 2)
           %td.text-end.d-print-none
             = link_to account_trade_path(@account, trade) do
               %i.bi.bi-eye
@@ -48,8 +44,6 @@
             for
             = number_with_delimiter(trade.prior_trade.quantity_balance)
           %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_with_precision(trade.quantity_tax_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_to_currency(trade.cost_tax_balance,precision: 2)
 
           %td.text-end.d-print-none
             = link_to account_trade_path(@account, trade) do
@@ -69,8 +63,6 @@
           %td.text-end= number_to_currency(trade.amount)
 
           %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_with_precision(trade.quantity_tax_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.tax-data.text-end= number_to_currency(trade.cost_tax_balance,precision: 2)
 
           %td.text-end.d-print-none
             = link_to account_trade_path(@account, trade) do

@@ -30,8 +30,6 @@ class Trade < ApplicationRecord
   # after_save :update_changed_securities!, if: :security_id_previously_changed?
   before_create :set_quantity_on_conversion!
   after_destroy :calculate_quantity_balances!
-  # after_destroy :reset_lots!
-  # before_save :add_conversion_trades!, unless: :is_recalc
   after_commit :reset_lots!, unless: :is_recalc
 
   def update_changed_securities!
