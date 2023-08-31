@@ -8,9 +8,9 @@
 
     .navbar-nav.ml-auto
       - if @account
-        .navbar-text= @account.title
+        .navbar-text.account-title= @account.title
       .collapse.navbar-collapse#navbarSupportedContent
-        .dropdown
+        .dropdown.d-print-none
           %button{id: 'settings-link', class: 'nav-link dropdown-toggle', "role": "button", "data-bs-toggle": "dropdown", "aria-expanded": "false"}
             %i.bi.bi-gear.p-2
           %ul.dropdown-menu.dropdown-menu-end

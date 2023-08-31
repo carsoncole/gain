@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_25_224132) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_27_182141) do
   create_table "accounts", force: :cascade do |t|
     t.string "title"
     t.string "number"
@@ -41,9 +41,23 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_25_224132) do
     t.decimal "amount", precision: 15, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "security_id"
     t.index ["account_id"], name: "index_gain_losses_on_account_id"
     t.index ["source_trade_id"], name: "index_gain_losses_on_source_trade_id"
     t.index ["trade_id"], name: "index_gain_losses_on_trade_id"
+  end
+
+  create_table "lots", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "security_id", null: false
+    t.date "date"
+    t.integer "trade_id"
+    t.decimal "quantity", precision: 15, scale: 2
+    t.decimal "amount", precision: 15, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_lots_on_account_id"
+    t.index ["security_id"], name: "index_lots_on_security_id"
   end
 
   create_table "securities", force: :cascade do |t|
@@ -75,6 +89,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_25_224132) do
     t.integer "conversion_to_security_id"
     t.decimal "conversion_to_quantity"
     t.decimal "conversion_from_quantity"
+    t.integer "conversion_from_security_id"
+    t.string "note"
     t.index ["account_id", "security_id"], name: "index_trades_on_account_id_and_security_id"
     t.index ["account_id"], name: "index_trades_on_account_id"
     t.index ["security_id"], name: "index_trades_on_security_id"
@@ -93,6 +109,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_25_224132) do
   end
 
   add_foreign_key "gain_losses", "accounts"
+  add_foreign_key "lots", "accounts"
+  add_foreign_key "lots", "securities"
   add_foreign_key "trades", "accounts"
   add_foreign_key "trades", "securities"
 end

@@ -52,3 +52,12 @@ h1#home {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+@media print {
+  table.table td, th {
+    color: #000 !important;
+  }
+  h1,h2,h3, .navbar-brand, .account-title {
+    color: #000 !important
+  }
+}

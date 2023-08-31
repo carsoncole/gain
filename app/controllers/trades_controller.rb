@@ -7,6 +7,9 @@ class TradesController < ApplicationController
   # GET /trades or /trades.json
   def index
     @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc))
+    if params[:all]
+      @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc), items: 1000)
+    end
   end
 
   # GET /trades/1 or /trades/1.json
@@ -26,14 +29,13 @@ class TradesController < ApplicationController
   def create
     @trade = @account.trades.new(trade_params)
 
-    respond_to do |format|
-      if @trade.save
-        format.html { redirect_to account_trades_url(@account), notice: "Trade was successfully created." }
-        format.json { render :show, status: :created, location: @trade }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @trade.errors, status: :unprocessable_entity }
-      end
+    if @trade.conversion?
+      @trade.add_conversion_trades!
+      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
+    elsif @trade.save
+      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
+    else
+      render :new
     end
   end
 
@@ -72,6 +74,6 @@ class TradesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def trade_params
-      params.require(:trade).permit(:date, :account_id, :security_id, :price, :quantity, :fee, :other, :amount, :security_balance, :trade_type, :conversion_to_quantity, :conversion_from_quantity, :conversion_to_security_id, :split_new_shares)
+      params.require(:trade).permit(:date, :account_id, :security_id, :price, :quantity, :fee, :other, :amount, :security_balance, :trade_type, :conversion_to_quantity, :conversion_from_quantity, :conversion_to_security_id, :split_new_shares, :note)
     end
 end

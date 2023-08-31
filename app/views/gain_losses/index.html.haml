@@ -7,6 +7,9 @@
       %th Trade
       %th Source Trade
       %th Security
+      %th Purchased
+      %th Cost Price
+      %th Sale Price
       %th.text-end Qty
       %th.text-end Amount
   %tbody
@@ -16,5 +19,8 @@
         %th= link_to gl.trade_id, account_trade_path(@account, gl.trade_id)
         %th= link_to gl.source_trade_id, account_trade_path(@account, gl.source_trade_id)
         %th= gl.trade.security.name
+        %th= gl.source_trade.date
+        %th= number_to_currency(gl.source_trade.price, precision: 5, strip_insignificant_zeros: true)
+        %th= number_to_currency(gl.trade.price, precision: 5, strip_insignificant_zeros: true)
         %th.text-end= number_with_delimiter(gl.quantity, precision: 5, strip_insignificant_zeros: true)
         %th.text-end= number_to_currency(gl.amount)

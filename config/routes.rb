@@ -26,6 +26,7 @@ Rails.application.routes.draw do\
 
   resources :accounts, except: :show do
     resources :trades
+    resources :lots, only: :index
     get 'positions' => 'positions#index', as: 'positions'
     resources :gain_losses, only: :index
   end

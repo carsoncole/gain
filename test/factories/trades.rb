@@ -21,5 +21,11 @@ FactoryBot.define do
       quantity { nil }
       split_new_shares { 1000 }
     end
+
+    factory :conversion_trade do
+      trade_type { 'Conversion' }
+      price { nil }
+      quantity { nil }
+    end
   end
 end

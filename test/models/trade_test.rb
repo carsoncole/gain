@@ -25,20 +25,20 @@ class TradeTest < ActiveSupport::TestCase
   test "buy?" do
     trade = build(:buy_trade)
     assert trade.buy?
-    assert trade.buy_or_sell?
+    assert trade.buy_sell?
     assert_not trade.sell?
   end
 
   test "sell?" do
     trade = build(:sell_trade)
     assert trade.sell?
-    assert trade.buy_or_sell?
+    assert trade.buy_sell?
   end
 
   test "split?" do
     trade = build(:split_trade)
     assert trade.split?
-    assert_not trade.buy_or_sell?
+    assert_not trade.buy_sell?
   end
 
   test "split not requiring price and quantity" do
@@ -197,15 +197,46 @@ class TradeTest < ActiveSupport::TestCase
     assert_equal 1150, trade_4.reload.quantity_balance
   end
 
-  test "buy tax values post split" do
-    trade_1 = create(:buy_trade, quantity: 10, price: 10)
-    assert_equal 10, trade_1.reload.quantity_tax_balance
-    trade_2 = create(:split_trade, account: trade_1.account, security_id: trade_1.security_id, split_new_shares: 100)
+  test "conversion of full quantity to new security" do
+    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 10)
+    assert_equal 0, @security_2.trades.count
+    assert_equal trade_1.security_id, Position.all(trade_1.account).first.security.id
+    trade_2 = build(:conversion_trade, conversion_to_quantity: 10, conversion_from_quantity: 10, conversion_to_security_id: @security_2.id, account: @account, security: @security)
+    trade_2.add_conversion_trades!
+    assert_equal 3, Trade.count
+    assert_equal 1, @security_2.trades.count
+    assert_equal 10, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 1, Position.all(trade_1.account).count
+    assert_equal @security_2.id, Position.all(trade_1.account).first.security.id
+  end
 
-    assert_equal 100, trade_1.reload.quantity_tax_balance
-    assert_equal 100, trade_1.cost_tax_balance
-    trade_3 = create(:buy_trade, account: trade_1.account, security_id: trade_1.security_id, quantity: 100, price: 2)
-    assert_equal 100, trade_3.reload.quantity_tax_balance
-    assert_equal 200, trade_3.reload.cost_tax_balance
+  test "partial conversion" do
+    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 100)
+    trade_2 = build(:conversion_trade, conversion_to_quantity: 20, conversion_from_quantity: 20, conversion_to_security_id: @security_2.id, account: @account, security: @security)
+    trade_2.add_conversion_trades!
+    assert_equal 20, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 200, @account.trades.where(security_id: @security_2.id).sum(:amount)
+    assert_equal 800, @account.trades.where(security_id: @security.id).sum(:amount)
+    assert_equal 3, Trade.count
+  end
+
+  test "conversion of full quantity to higher number of shares" do
+    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 100)
+    trade_2 = build(:conversion_trade, conversion_to_quantity: 200, conversion_from_quantity: 100, conversion_to_security_id: @security_2.id, account: @account, security: @security)
+    trade_2.add_conversion_trades!
+    assert_equal 200, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 0, @account.trades.where(security_id: @security.id).last.quantity_balance
+  end
+
+  test "conversion of multiple lots" do
+    trades = create_list(:buy_trade, 5, account: @account, security: @security, quantity: 100)
+    trade_2 = build(:conversion_trade, conversion_to_quantity: 500, conversion_from_quantity: 500, conversion_to_security_id: @security_2.id, account: @account, security: @security)
+    trade_2.add_conversion_trades!
+    assert_equal 5, @account.trades.where(security_id: @security_2.id).count
+    assert_equal 5000, @account.trades.where(security_id: @security_2.id).sum(:amount)
+    assert_equal 500, @account.trades.where(security_id: @security_2.id).sum(:quantity)
+    assert_equal 500, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 5, @account.trades.conversion.where(security_id: @security_2.id).count
+    assert_equal 0, @account.trades.where(security_id: @security.id).last.quantity_balance
   end
 end

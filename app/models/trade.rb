@@ -1,7 +1,11 @@
 class Trade < ApplicationRecord
   has_many :gain_losses, dependent: :destroy
+  has_one :lot, dependent: :destroy
+  has_many :lots
   belongs_to :account
   belongs_to :security
+  belongs_to :conversion_to_security, class_name: 'Security', optional: true
+  belongs_to :conversion_from_security, class_name: 'Security', optional: true
 
   attr_accessor :is_recalc
 
@@ -10,6 +14,7 @@ class Trade < ApplicationRecord
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
   scope :splits, -> { where(trade_type: 'Split') }
+  scope :conversion, -> { where(trade_type: 'Conversion') }
 
   TYPES = [
     'Buy',
@@ -22,9 +27,21 @@ class Trade < ApplicationRecord
   before_validation :set_sign!, unless: :is_recalc
   before_save :set_amount_or_price!, unless: :is_recalc
   after_save :calculate_quantity_balances!, unless: :is_recalc
-  after_save :calculate_gains_and_losses!, unless: :is_recalc
+  # after_save :update_changed_securities!, if: :security_id_previously_changed?
+  before_create :set_quantity_on_conversion!
   after_destroy :calculate_quantity_balances!
-  after_destroy :calculate_gains_and_losses!, unless: :is_recalc
+  # after_destroy :reset_lots!
+  # before_save :add_conversion_trades!, unless: :is_recalc
+  after_commit :reset_lots!, unless: :is_recalc
+
+  def update_changed_securities!
+    return if security_id_previously_was.nil?
+    # Lot.reset_lots!(account.user.securities.find(security_id_previously_was), account)
+  end
+
+  def reset_lots!
+    Lot.reset_lots!(account, security)
+  end
 
   def set_defaults!
     self.date ||= Date.today
@@ -32,15 +49,19 @@ class Trade < ApplicationRecord
   end
 
   def buy?
-    trade_type == 'Buy' ? true : false
+    trade_type == 'Buy'
   end
 
   def sell?
-    trade_type == 'Sell' ? true : false
+    trade_type == 'Sell'
   end
 
-  def buy_or_sell?
+  def buy_sell?
     buy? || sell?
+  end
+
+  def buy_sell_conversion?
+    buy_sell? || conversion?
   end
 
   def  buy_sell_split?
@@ -49,6 +70,10 @@ class Trade < ApplicationRecord
 
   def split?
     trade_type == 'Split'
+  end
+
+  def conversion?
+    trade_type == 'Conversion'
   end
 
   def set_sign!
@@ -61,7 +86,7 @@ class Trade < ApplicationRecord
   end
 
   def set_amount_or_price!
-    if buy_or_sell?
+    if buy_sell?
       self.fee ||= 0
       self.other ||= 0
     end
@@ -81,6 +106,12 @@ class Trade < ApplicationRecord
     end
   end
 
+  def set_quantity_on_conversion!
+    if conversion? && conversion_from_security_id.nil? && conversion_from_quantity.present?
+      self.quantity = -self.conversion_from_quantity
+    end
+  end
+
   def calculate_quantity_balances!
     related_security_trades.each do |t|
       t.calculate_quantity_balance!
@@ -90,16 +121,13 @@ class Trade < ApplicationRecord
   end
 
   def calculate_quantity_balance!
-    if buy_or_sell?
+    if buy_sell?
       self.quantity_balance = prior_quantity_balance + quantity
     elsif split?
       self.quantity_balance = split_new_shares
+    elsif conversion?
+      self.quantity_balance = prior_quantity_balance + quantity
     end
-  end
-
-  def set_initial_tax_balances!
-    self.quantity_tax_balance = self.quantity if buy_or_sell?
-    self.cost_tax_balance = self.amount * (buy? ? 1 : -1) if buy_or_sell?
   end
 
   def adjust_tax_balances_for_splits!
@@ -112,35 +140,23 @@ class Trade < ApplicationRecord
         rst.quantity_tax_balance = split_new_shares - shares_distributed
       else
         rst.quantity_tax_balance *= split_ratio
-        shares_distributed += rst.quantivty_tax_balance
+        shares_distributed += rst.quantity_tax_balance
       end
       rst.save
     end
 
   end
 
-  def quantity_balance_needs_updating?
-    if quantity_changed? || date_changed?
-      true
-    else
-      false
-    end
+  def related_security_trades
+    security.trades.where("account_id = ?", self.account_id).order(date: :asc, id: :asc)
   end
 
-  def related_security_trades
-    security.trades.where("account_id = ?", self.account_id).order(date: :asc, created_at: :asc)
+  def related_inclusive_later_security_trades
+    related_security_trades.where("date > ? OR (date = ? AND id >= ?)", date, date, id)
   end
 
   def related_buy_sell_trades
     security.trades.buy_sell.where("account_id = ?", self.account_id).order(date: :asc, created_at: :asc)
-  end
-
-  def related_counter_trades
-    if trade_type == 'Buy' || trade_type == 'Split'
-      account.trades.buy_sell.where("security_id = ? AND (quantity_tax_balance < 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
-    elsif trade_type == 'Sell' || trade_type == 'Split'
-      account.trades.buy_sell.where("security_id = ? AND (quantity_tax_balance > 0 AND (date < ? OR ( date = ? AND created_at < ? )))", self.security_id, self.date, self.date, self.created_at ||= Time.now).order(date: :asc, created_at: :asc)
-    end
   end
 
   def prior_trade
@@ -152,78 +168,31 @@ class Trade < ApplicationRecord
   end
 
   def cost_per_unit
-    (amount / quantity).abs if buy_or_sell?
-  end
-
-  def calculate_gains_and_losses!
-    return unless buy_sell_split?
-
-    account.gain_losses.joins(:trade).where("trades.security_id = ?", self.security_id).destroy_all  # destroy existing gains/losses
-    related_security_trades.each do |rst|
-      rst.set_initial_tax_balances!
-      rst.is_recalc = true
-      rst.save if rst.changed?
-      rst.adjust_tax_balances_for_splits! if rst.split?
-      rst.process_gains_and_losses!
-    end
-  end
-
-  def process_gains_and_losses!
-    return unless related_counter_trades.any?
-    self.is_recalc = true
-
-    related_counter_trades.each do |t|
-      break if quantity_tax_balance == 0
-      t.is_recalc = true
-
-      if quantity_tax_balance + t.quantity_tax_balance == 0
-        quantity_used = t.quantity_tax_balance
-        t.quantity_tax_balance, self.quantity_tax_balance = 0, 0
-        gain = -(cost_tax_balance + t.cost_tax_balance)
-        t.cost_tax_balance, self.cost_tax_balance = 0,0
-
-      # SELL
-      elsif sell? && quantity_tax_balance.abs < t.quantity_tax_balance.abs
-        t.quantity_tax_balance += quantity_tax_balance
-        t.cost_tax_balance += t.cost_per_unit * quantity_tax_balance
-        quantity_used = quantity_tax_balance
-        proceeds = -cost_tax_balance
-        gain = proceeds - (t.cost_per_unit * -quantity_used)
-        self.quantity_tax_balance, self.cost_tax_balance = 0,0
-
-      elsif sell? # quantity_tax_balance.abs > t.quantity_tax_balance.abs
-        self.quantity_tax_balance += t.quantity_tax_balance
-        self.cost_tax_balance += (t.quantity_tax_balance * self.cost_per_unit)
-        quantity_used = -t.quantity_tax_balance
-        proceeds = -(quantity_used * self.cost_per_unit)
-        gain = proceeds - t.cost_tax_balance
-        t.quantity_tax_balance, t.cost_tax_balance = 0.0
-
-      # BUY
-      elsif buy? && quantity_tax_balance < t.quantity_tax_balance.abs
-        t.quantity_tax_balance += quantity_tax_balance
-        t.cost_tax_balance += quantity_tax_balance * t.cost_per_unit
-        quantity_used = quantity_tax_balance
-        gain = cost_tax_balance - (quantity_used * t.cost_per_unit)
-        self.quantity_tax_balance, self.cost_tax_balance = 0,0
-
-      elsif buy? # quantity_tax_balance > t.quantity_tax_balance.abs
-        self.quantity_tax_balance += t.quantity_tax_balance
-        self.cost_tax_balance += t.quantity_tax_balance * cost_per_unit
-        quantity_used = -t.quantity_tax_balance
-        gain = (quantity_used * t.cost_per_unit) - (quantity_used * cost_per_unit)
-        t.quantity_tax_balance, t.cost_tax_balance = 0,0
-      end
-
-      gain_losses.create(account: t.account, date: date, quantity: quantity_used, amount: gain, source_trade_id: t.id)
-      t.save
-    end
-    self.save if self.changed?
+    (amount / quantity).abs if buy_sell_conversion?
   end
 
   def average_security_cost_per_share
     amount / quantity
   end
 
+  def add_conversion_trades!
+    return unless conversion? && !conversion_to_security_id.nil?
+    quantity_converted = 0
+    conversion_ratio = conversion_to_quantity / conversion_from_quantity
+    account.lots.where(security_id: security_id).order(:date, :id).each do |l|
+      break if quantity_converted >= conversion_from_quantity
+      quantity_to_be_converted = conversion_from_quantity - quantity_converted
+      if l.quantity <= quantity_to_be_converted
+        account.trades.create(security_id: conversion_to_security_id, quantity: l.quantity * conversion_ratio, amount: l.amount, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        account.trades.create(security_id: security_id, quantity: -l.quantity, amount: -l.amount, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        quantity_converted += l.quantity
+      elsif l.quantity > quantity_to_be_converted
+        ratio_to_convert = quantity_to_be_converted / l.quantity
+        account.trades.create(security_id: conversion_to_security_id, quantity: quantity_to_be_converted * conversion_ratio, amount: l.amount * ratio_to_convert, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        account.trades.create(security_id: security_id, quantity: -quantity_to_be_converted, amount: -l.amount * ratio_to_convert, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        quantity_converted += quantity_to_be_converted
+      end
+    end
+  end
 
 end

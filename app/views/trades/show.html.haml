@@ -7,13 +7,12 @@
       %th Date:
       %td.text-end= @trade.date
     %tr
-      %th
-      %td.text-end= @trade.trade_type
+      %th.text-center(colspan='2')= @trade.trade_type
     %tr
       %th Security:
       %td.text-end= @trade.security.name
 
-    - if @trade.buy_or_sell?
+    - if @trade.buy_sell?
       %tr
         %th Price:
         %td.text-end= number_to_currency @trade.price, precision: 5, strip_insignificant_zeros: true
@@ -33,19 +32,37 @@
         %th Security balance:
         %td.text-end= number_with_delimiter(@trade.quantity_balance, precision: 5, strip_insignificant_zeros: true)
 
-    - else
+    - elsif @trade.conversion?
+      %tr
+        %th Quantity:
+        %td.text-end= number_with_delimiter @trade.quantity, precision: 2, strip_insignificant_zeros: true
       %tr
         %th Conversion new share quantity:
-        %td.text-end= number_with_delimiter @trade.conversion_new_quantity, precision: 2
+        %td.text-end= number_with_delimiter @trade.conversion_to_quantity, precision: 2, strip_insignificant_zeros: true
       %tr
         %th Conversion from share quantity:
-        %td.text-end= number_with_delimiter @trade.conversion_from_quantity, precision: 2
+        %td.text-end= number_with_delimiter @trade.conversion_from_quantity, precision: 2, strip_insignificant_zeros: true
       %tr
         %th Conversion security:
         %td.text-end= @trade.security.name
+      - if @trade.conversion_to_security_id
+        %tr
+          %th Conversion to security:
+          %td.text-end= @trade.conversion_to_security.name if @trade.conversion_to_security_id
+      - if @trade.conversion_from_security_id
+        %tr
+          %th Conversion from security:
+          %td.text-end= @trade.conversion_from_security.name if @trade.conversion_from_security_id
+
+    - elsif @trade.split
       %tr
         %th Split new shares:
         %td.text-end= number_with_delimiter @trade.split_new_shares, precision: 2
+
+    -if @trade.note
+      %tr
+        %th Note
+        %td.text-end= @trade.note
   %br
   = link_to account_trade_path(@account, @trade), id: "delete-trade", method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?'} do
     %i.bi.bi-trash
