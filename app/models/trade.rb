@@ -11,6 +11,7 @@ class Trade < ApplicationRecord
 
   validates :date, :trade_type, :security_id, presence: true
   validates :price, :quantity, presence: true, if: -> { trade_type == ['Buy', 'Sell'] }
+  # validates :split_new_shares, presence: true, if: -> { trade_type == 'Split' && quantity != 0 }
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
   scope :splits, -> { where(trade_type: 'Split') }
@@ -27,15 +28,8 @@ class Trade < ApplicationRecord
   before_validation :set_sign!, unless: :is_recalc
   before_save :set_amount_or_price!, unless: :is_recalc
   after_save :calculate_quantity_balances!, unless: :is_recalc
-  # after_save :update_changed_securities!, if: :security_id_previously_changed?
-  before_create :set_quantity_on_conversion!
   after_destroy :calculate_quantity_balances!
   after_commit :reset_lots!, unless: :is_recalc
-
-  def update_changed_securities!
-    return if security_id_previously_was.nil?
-    # Lot.reset_lots!(account.user.securities.find(security_id_previously_was), account)
-  end
 
   def reset_lots!
     Lot.reset_lots!(account, security)
@@ -62,8 +56,8 @@ class Trade < ApplicationRecord
     buy_sell? || conversion?
   end
 
-  def  buy_sell_split?
-    buy? || sell? || split?
+  def buy_sell_split_conversion?
+    buy_sell_conversion? || split?
   end
 
   def split?
@@ -104,12 +98,6 @@ class Trade < ApplicationRecord
     end
   end
 
-  def set_quantity_on_conversion!
-    if conversion? && conversion_from_security_id.nil? && conversion_from_quantity.present?
-      self.quantity = -self.conversion_from_quantity
-    end
-  end
-
   def calculate_quantity_balances!
     related_security_trades.each do |t|
       t.calculate_quantity_balance!
@@ -119,42 +107,11 @@ class Trade < ApplicationRecord
   end
 
   def calculate_quantity_balance!
-    if buy_sell?
-      self.quantity_balance = prior_quantity_balance + quantity
-    elsif split?
-      self.quantity_balance = split_new_shares
-    elsif conversion?
-      self.quantity_balance = prior_quantity_balance + quantity
-    end
-  end
-
-  def adjust_tax_balances_for_splits!
-    trades_to_process = related_security_trades.where("quantity_tax_balance <> 0 AND (date < ? OR (date = ? AND created_at < ?))", date, date, created_at)
-    split_ratio = split_new_shares / quantity_balance
-    shares_distributed = 0
-    trades_to_process.each do |rst|
-      rst.is_recalc = true
-      if rst == trades_to_process.last
-        rst.quantity_tax_balance = split_new_shares - shares_distributed
-      else
-        rst.quantity_tax_balance *= split_ratio
-        shares_distributed += rst.quantity_tax_balance
-      end
-      rst.save
-    end
-
+    self.quantity_balance = prior_quantity_balance + quantity if buy_sell_split_conversion?
   end
 
   def related_security_trades
     security.trades.where("account_id = ?", self.account_id).order(date: :asc, id: :asc)
-  end
-
-  def related_inclusive_later_security_trades
-    related_security_trades.where("date > ? OR (date = ? AND id >= ?)", date, date, id)
-  end
-
-  def related_buy_sell_trades
-    security.trades.buy_sell.where("account_id = ?", self.account_id).order(date: :asc, created_at: :asc)
   end
 
   def prior_trade
@@ -166,11 +123,17 @@ class Trade < ApplicationRecord
   end
 
   def cost_per_unit
-    (amount / quantity).abs if buy_sell_conversion?
+    (amount / quantity).abs if buy_sell_split_conversion?
   end
 
-  def average_security_cost_per_share
-    amount / quantity
+  def add_split_trades!
+    return unless split? && split_new_shares.present? && prior_trade.present?
+    existing_shares_quantity = account.last_trade(security).quantity_balance
+    split_ratio = split_new_shares / existing_shares_quantity
+    security.lots.where(account: account).each do |l|
+      old_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: -l.quantity, date: l.date, amount: -l.amount)
+      new_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: l.quantity * split_ratio, date: l.date, amount: l.amount)
+    end
   end
 
   def add_conversion_trades!

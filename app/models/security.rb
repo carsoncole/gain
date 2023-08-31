@@ -9,8 +9,4 @@ class Security < ApplicationRecord
 
   before_save { |security| security.symbol = security.symbol.upcase }
 
-  def splits(account)
-    trades.splits.where(account_id: account.id)
-  end
-
 end

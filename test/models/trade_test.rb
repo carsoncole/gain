@@ -3,8 +3,9 @@ require "test_helper"
 class TradeTest < ActiveSupport::TestCase
   setup do
     @account = create(:account)
-    @security = create(:security)
-    @security_2 = create(:security)
+    @user = @account.user
+    @security = create(:security, user: @user)
+    @security_2 = create(:security, user: @user)
   end
 
   test "quantity sign" do
@@ -26,6 +27,7 @@ class TradeTest < ActiveSupport::TestCase
     trade = build(:buy_trade)
     assert trade.buy?
     assert trade.buy_sell?
+    assert trade.buy_sell_conversion?
     assert_not trade.sell?
   end
 
@@ -41,11 +43,10 @@ class TradeTest < ActiveSupport::TestCase
     assert_not trade.buy_sell?
   end
 
-  test "split not requiring price and quantity" do
-    trade = build(:split_trade, security: @security)
-    assert trade.valid?
-    assert_nil trade.amount
-    assert trade.save
+  test "conversion?" do
+    trade = build(:conversion_trade)
+    assert trade.conversion?
+    assert trade.buy_sell_conversion?
   end
 
   test "amount calculation with no fees, commissions" do
@@ -188,12 +189,13 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "split trade followed by buy and sell" do
-    trade_1 = create(:buy_trade, quantity: 100)
-    trade_2 = create(:split_trade, account: trade_1.account, security_id: trade_1.security_id, split_new_shares: 1000)
-    assert_equal 1000, trade_2.reload.quantity_balance
-    trade_3 = create(:buy_trade, quantity: 200, account: trade_1.account, security_id: trade_1.security_id)
+    trade_1 = create(:buy_trade, quantity: 100, security: @security, account: @account)
+    trade_2 = build(:split_trade, account: @account, security: @security, split_new_shares: 1000)
+    trade_2.add_split_trades!
+    assert_equal 1000, @account.last_trade(@security).quantity_balance
+    trade_3 = create(:buy_trade, quantity: 200, account: @account, security: @security)
     assert_equal 1200, trade_3.reload.quantity_balance
-    trade_4 = create(:sell_trade, quantity: 50, account: trade_1.account, security_id: trade_1.security_id)
+    trade_4 = create(:sell_trade, quantity: 50, account: trade_1.account, security: @security)
     assert_equal 1150, trade_4.reload.quantity_balance
   end
 

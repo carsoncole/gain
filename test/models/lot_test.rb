@@ -107,4 +107,8 @@ class LotTest < ActiveSupport::TestCase
     Lot.reset_lots!(account, security)
     assert_equal 20, Lot.count
   end
+
+  test "split" do
+    #TODO
+  end
 end

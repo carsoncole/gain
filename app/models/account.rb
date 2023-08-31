@@ -7,11 +7,11 @@ class Account < ApplicationRecord
 
   validates :title, :number, presence: true
 
-  def holdings_as_security_ids
-    trades.group(:security_id).map{|t| t.security_id }
-  end
-
   def positions(date=nil)
     Position.all(self, date)
+  end
+
+  def last_trade(security)
+    trades.where(security: security).where("id IS NOT NULL").order(:date, :id).last
   end
 end

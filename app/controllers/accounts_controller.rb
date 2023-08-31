@@ -7,10 +7,6 @@ class AccountsController < ApplicationController
     @accounts = current_user.accounts.all
   end
 
-  def show
-    render layout: 'accounts'
-  end
-
   # GET /accounts/new
   def new
     @account = Account.new

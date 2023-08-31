@@ -1,6 +1,6 @@
 require "test_helper"
 
-class LotsControllerTest < ActionDispatch::IntegrationTest
+class GainLossesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @account = create(:account)
     @trade = create(:trade, account: @account)
@@ -8,7 +8,7 @@ class LotsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get index" do
-    get account_lots_url(@account, as: @user)
+    get account_gain_losses_url(@account, as: @user)
     assert_response :success
   end
 end

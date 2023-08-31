@@ -18,76 +18,22 @@
 
   %tbody
     - @trades.each do |trade|
-      - if trade.buy_sell? || trade.conversion?
-        %tr
-          %td= trade.date.strftime('%Y-%b-%d')
-          %td= trade.trade_type
-          %td= trade.security.name
-          %td.text-end= number_to_currency(trade.price, precision: 5, strip_insignificant_zeros: true)
-          %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.text-end= number_to_currency(trade.amount)
-          %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.text-end.d-print-none
-            = link_to account_trade_path(@account, trade) do
-              %i.bi.bi-eye
-            = link_to edit_account_trade_path(@account, trade) do
-              %i.bi.bi-pencil
-            = link_to account_trade_path(@account, trade), method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
-              %i.bi.bi-trash
-      - elsif trade.split?
-        %tr
-          %td= trade.date.strftime('%Y-%b-%d')
-          %td= trade.trade_type
-          %td= trade.security.name
-          %td.text-center(colspan="3")
-            = number_with_delimiter(trade.split_new_shares)
-            for
-            = number_with_delimiter(trade.prior_trade.quantity_balance)
-          %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+      %tr
+        %td= trade.date.strftime('%Y-%b-%d')
+        %td= trade.trade_type
+        %td= trade.security.name
+        %td.text-end= number_to_currency(trade.price, precision: 5, strip_insignificant_zeros: true)
+        %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.text-end= number_to_currency(trade.amount)
+        %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
+        %td.text-end.d-print-none
+          = link_to account_trade_path(@account, trade) do
+            %i.bi.bi-eye
+          = link_to edit_account_trade_path(@account, trade) do
+            %i.bi.bi-pencil
+          = link_to account_trade_path(@account, trade), method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
+            %i.bi.bi-trash
 
-          %td.text-end.d-print-none
-            = link_to account_trade_path(@account, trade) do
-              %i.bi.bi-eye
-            = link_to edit_account_trade_path(@account, trade) do
-              %i.bi.bi-pencil
-            = link_to account_trade_path(@account, trade), method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
-              %i.bi.bi-trash
-
-      - elsif nil # trade.conversion?
-        %tr
-          %td= trade.date.strftime('%Y-%b-%d')
-          %td= trade.trade_type
-          %td= trade.security.name
-          %td.text-end= number_to_currency(trade.price, precision: 5, strip_insignificant_zeros: true)
-          %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-          %td.text-end= number_to_currency(trade.amount)
-
-          %td.text-end= number_with_precision(trade.quantity_balance, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
-
-          %td.text-end.d-print-none
-            = link_to account_trade_path(@account, trade) do
-              %i.bi.bi-eye
-            = link_to edit_account_trade_path(@account, trade) do
-              %i.bi.bi-pencil
-            = link_to account_trade_path(@account, trade), method: :delete, data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure?' } do
-              %i.bi.bi-trash
-        %tr
-          %td.text-center(colspan="9")
-            - if trade.conversion_from_security_id
-              - security = Security.find(trade.conversion_from_security_id)
-            = security&.name || trade.security.name
-            = surround("(", ")") do
-              = pluralize(trade.conversion_from_quantity, "shr")
-            = '->'
-            - if trade.conversion_from_security_id
-              = trade.security.name
-            - else
-              - security = Security.find(trade.conversion_to_security_id)
-            = security&.name || trade.security.name
-            = surround("(", ")") do
-              = pluralize(trade.conversion_to_quantity, "shr")
-
-          %td.text-end.d-print-none
 
 .d-print-none= pagy_bootstrap_nav(@pagy).html_safe if @pagy.pages > 1
 %br

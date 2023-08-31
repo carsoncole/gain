@@ -32,6 +32,9 @@ class TradesController < ApplicationController
     if @trade.conversion?
       @trade.add_conversion_trades!
       redirect_to account_trades_url(@account), notice: "Trade was successfully created."
+    elsif @trade.split?
+      @trade.add_split_trades!
+      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
     elsif @trade.save
       redirect_to account_trades_url(@account), notice: "Trade was successfully created."
     else
