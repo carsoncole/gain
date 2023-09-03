@@ -7,6 +7,6 @@ class PositionsController < ApplicationController
   end
 
   def set_account
-    @account = Account.find(params[:account_id]) if params[:account_id]
+    @account = current_user.accounts.find(params[:account_id]) if params[:account_id]
   end
 end

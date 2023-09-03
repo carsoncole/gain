@@ -1,26 +1,29 @@
-%h1 Schedule D
+%h1 IRS Schedule D
 
 
 = form_tag '', method: :get do
   = select_tag :year, options_for_select(@years, selected: @year)
   = submit_tag 'filter', class: 'btn btn-small'
 
-%table.table
+- [["Short Term", @short_term_gain_losses], ["Long Term", @long_term_gain_losses]].each do |report, collection|
 
-  %thead
-    %tr
-      %th Description of property
-      %th Date acquired
-      %th Date sold
-      %th.text-end Proceeds
-      %th.text-end Cost basis
-      %th.text-end Gain or (loss)
-  %tbody
-    - @gain_losses.each do |gl|
+  %h2.mt-3= report
+
+  %table.table.mb-5
+    %thead
       %tr
-        %td= description_of_property(gl.trade)
-        %td= irs_date(gl.purchase_date)
-        %td= irs_date(gl.date)
-        %td.text-end= number_to_currency(gl.proceeds)
-        %td.text-end= number_to_currency(gl.cost)
-        %td.text-end= number_to_currency(gl.amount)
+        %th Description of property
+        %th Date acquired
+        %th Date sold
+        %th.text-end Proceeds
+        %th.text-end Cost basis
+        %th.text-end Gain or (loss)
+    %tbody
+      - collection.each do |gl|
+        %tr
+          %td= description_of_property(gl.trade)
+          %td= irs_date(gl.purchase_date)
+          %td= irs_date(gl.date)
+          %td.text-end= number_to_currency(gl.proceeds)
+          %td.text-end= number_to_currency(gl.cost)
+          %td.text-end= number_to_currency(gl.amount)
