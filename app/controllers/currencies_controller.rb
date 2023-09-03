@@ -27,10 +27,8 @@ class CurrenciesController < ApplicationController
     respond_to do |format|
       if @currency.save
         format.html { redirect_to currencies_url, notice: "Currency was successfully created." }
-        format.json { render :show, status: :created, location: @currency }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @currency.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -40,10 +38,8 @@ class CurrenciesController < ApplicationController
     respond_to do |format|
       if @currency.update(currency_params)
         format.html { redirect_to currencies_url, notice: "Currency was successfully updated." }
-        format.json { render :show, status: :ok, location: @currency }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @currency.errors, status: :unprocessable_entity }
       end
     end
   end

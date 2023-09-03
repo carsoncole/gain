@@ -47,10 +47,8 @@ class TradesController < ApplicationController
     respond_to do |format|
       if @trade.update(trade_params)
         format.html { redirect_to account_trade_url(@account, @trade), notice: "Trade was successfully updated." }
-        format.json { render :show, status: :ok, location: @trade }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @trade.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -61,7 +59,6 @@ class TradesController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to account_trades_url(@account), notice: "Trade was successfully destroyed." }
-      format.json { head :no_content }
     end
   end
 

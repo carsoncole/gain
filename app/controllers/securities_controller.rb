@@ -27,10 +27,8 @@ class SecuritiesController < ApplicationController
     respond_to do |format|
       if @security.save
         format.html { redirect_to securities_url, notice: "Security was successfully created." }
-        format.json { render :show, status: :created, location: @security }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @security.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -40,10 +38,8 @@ class SecuritiesController < ApplicationController
     respond_to do |format|
       if @security.update(security_params)
         format.html { redirect_to securities_url, notice: "Security was successfully updated." }
-        format.json { render :show, status: :ok, location: @security }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @security.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -54,7 +50,6 @@ class SecuritiesController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to securities_url, notice: "Security was successfully destroyed." }
-      format.json { head :no_content }
     end
   end
 

@@ -1,6 +1,8 @@
 # Gain
 
-Accounting application for stock investments. Track positions, gains and losses, and generate reports for tax filings.
+Accounting application for stock investments. Track positions, lots, gains and losses, and generate reports for tax filings.
+
+FIFO accounting.
 
 ## Requirements
 
