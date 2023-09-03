@@ -9,8 +9,8 @@ module ApplicationHelper
     date.strftime('%b %d, %Y')
   end
 
-  def description_of_property(trade)
-    "#{trade.quantity.abs.to_s} sh #{trade.security.name}"
+  def description_of_property(gain_loss)
+    "#{gain_loss.quantity.abs.to_s} sh #{gain_loss.security.name}"
   end
 
 end

@@ -21,7 +21,7 @@
     %tbody
       - collection.each do |gl|
         %tr
-          %td= description_of_property(gl.trade)
+          %td= description_of_property(gl)
           %td= irs_date(gl.purchase_date)
           %td= irs_date(gl.date)
           %td.text-end= number_to_currency(gl.proceeds)
