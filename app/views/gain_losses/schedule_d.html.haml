@@ -1,0 +1,26 @@
+%h1 Schedule D
+
+
+= form_tag '', method: :get do
+  = select_tag :year, options_for_select(@years, selected: @year)
+  = submit_tag 'filter', class: 'btn btn-small'
+
+%table.table
+
+  %thead
+    %tr
+      %th Description of property
+      %th Date acquired
+      %th Date sold
+      %th.text-end Proceeds
+      %th.text-end Cost basis
+      %th.text-end Gain or (loss)
+  %tbody
+    - @gain_losses.each do |gl|
+      %tr
+        %td= description_of_property(gl.trade)
+        %td= irs_date(gl.purchase_date)
+        %td= irs_date(gl.date)
+        %td.text-end= number_to_currency(gl.proceeds)
+        %td.text-end= number_to_currency(gl.cost)
+        %td.text-end= number_to_currency(gl.amount)
