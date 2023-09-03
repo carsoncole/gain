@@ -38,3 +38,6 @@
 .d-print-none= pagy_bootstrap_nav(@pagy).html_safe if @pagy.pages > 1
 %br
 
+.text-end
+  = link_to "trades.csv?all=true", id: 'download-link' do
+    %i.bi.bi-file-arrow-down

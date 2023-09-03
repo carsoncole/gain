@@ -33,4 +33,6 @@ Rails.application.routes.draw do\
   resources :securities, except: :show
   resources :currencies, except: :show
 
+
+
 end

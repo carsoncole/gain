@@ -162,4 +162,18 @@ class Trade < ApplicationRecord
       end
     end
   end
+
+  def self.to_csv(account)
+    attrs = %w{id date trade_type security.name quantity price fee other amount quantity_balance note}
+
+    trades = account.trades.order(:date, :id)
+    CSV.generate(write_headers: true, headers: attrs) do |csv|
+      method_chains = attrs.map { |a| a.split('.') }
+      trades.each do |trade|
+        csv << method_chains.map do |chain|
+          chain.reduce(trade) { |obj, method_name| obj = obj.try(method_name.to_sym) }
+        end
+      end
+    end
+  end
 end

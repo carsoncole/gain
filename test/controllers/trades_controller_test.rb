@@ -19,6 +19,12 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get index with all trades and CSV download" do
+    get account_trades_url(@account, params: { all: true}, format: :csv, as: @user)
+    assert_response :success
+  end
+
+
   test "should get new" do
     get new_account_trade_url(@account, as: @user)
     assert_response :success
