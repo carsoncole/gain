@@ -4,23 +4,26 @@
   %thead
     %tr
       %th Date
-      %th Trade
-      %th Source Trade
       %th Security
-      %th Purchased
-      %th Cost Price
-      %th Sale Price
       %th.text-end Qty
-      %th.text-end Amount
+      %th Purchase date
+      %th Sale date
+      %th Cost
+      %th Proceeds
+      %th.text-end Gain/Loss
+      %th.text-end Trade/Src Trade
   %tbody
     - @gain_losses.each do |gl|
       %tr
-        %th= gl.date
-        %th= link_to gl.trade_id, account_trade_path(@account, gl.trade_id)
-        %th= link_to gl.source_trade_id, account_trade_path(@account, gl.source_trade_id)
+        %th= nice_date(gl.date)
         %th= gl.trade.security.name
-        %th= gl.source_trade.date
-        %th= number_to_currency(gl.source_trade.price, precision: 5, strip_insignificant_zeros: true)
-        %th= number_to_currency(gl.trade.price, precision: 5, strip_insignificant_zeros: true)
         %th.text-end= number_with_delimiter(gl.quantity, precision: 5, strip_insignificant_zeros: true)
+        %th= nice_date(gl.purchase_date)
+        %th= nice_date(gl.date)
+        %th= number_to_currency(gl.cost)
+        %th= number_to_currency(gl.proceeds)
         %th.text-end= number_to_currency(gl.amount)
+        %th.text-end
+          = link_to gl.trade_id, account_trade_path(@account, gl.trade_id)
+          \|
+          = link_to gl.source_trade_id, account_trade_path(@account, gl.source_trade_id)

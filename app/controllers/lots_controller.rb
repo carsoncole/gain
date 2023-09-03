@@ -3,6 +3,8 @@ class LotsController < ApplicationController
   layout 'accounts'
 
   def index
+    @lot_groups = @account.lots.joins(:security).group('securities.name').sum(:quantity)
+    @lot_amounts = @account.lots.joins(:security).group('securities.name').sum(:amount)
     @lots = @account.lots.order(date: :desc, trade_id: :desc)
   end
 

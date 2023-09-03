@@ -1,5 +1,28 @@
 %h1 Lots
 
+.col-5
+  %table.table.mb-5
+    %thead
+      %tr
+        %th Security
+        %th.text-end Qty
+    %tbody
+      - @lot_groups.each do |key, value|
+        %tr
+          %td= key
+          %td.text-end= number_with_delimiter(value, precision: 2, strip_insignificant_zeros: true)
+
+.col-5
+  %table.table.mb-5
+    %thead
+      %tr
+        %th Security
+        %th.text-end Amount
+    %tbody
+      - @lot_amounts.each do |key, value|
+        %tr
+          %td= key
+          %td.text-end= number_with_delimiter(value, precision: 2, strip_insignificant_zeros: true)
 
 %table.table
   %thead
@@ -13,9 +36,9 @@
   %tbody
     - @lots.each do |lot|
       %tr
-        %td= lot.date
+        %td= nice_date(lot.date)
         %td= lot.security.name
-        %td.text-end= number_with_precision(lot.quantity, precision: 2, strip_insignificant_zeros: true)
+        %td.text-end= number_with_delimiter(lot.quantity, precision: 2, strip_insignificant_zeros: true)
         %td.text-end= number_to_currency(lot.amount)
         %td.text-end= lot.id
         %td

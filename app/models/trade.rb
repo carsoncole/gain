@@ -111,11 +111,11 @@ class Trade < ApplicationRecord
   end
 
   def related_security_trades
-    security.trades.where("account_id = ?", self.account_id).order(date: :asc, id: :asc)
+    security.trades.where("account_id = ?", self.account_id).order(:date, :id)
   end
 
   def prior_trade
-    security.trades.where("account_id = ? AND (date < ? OR ( date = ? AND created_at < ?))", self.account_id, self.date, self.date, self.created_at ||= Time.now).order(date: :desc, created_at: :desc).first
+    security.trades.where("account_id = ? AND (date < ? OR ( date = ? AND id < ?))", self.account_id, self.date, self.date, self.id ||= Time.now).order(date: :desc, created_at: :desc).first
   end
 
   def prior_quantity_balance
@@ -128,9 +128,12 @@ class Trade < ApplicationRecord
 
   def add_split_trades!
     return unless split? && split_new_shares.present? && prior_trade.present?
+
+    Lot.reset_lots!(account, security)
+
     existing_shares_quantity = account.last_trade(security).quantity_balance
     split_ratio = split_new_shares / existing_shares_quantity
-    security.lots.where(account: account).each do |l|
+    security.lots.where(account: account).order(:date, :id).each do |l|
       old_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: -l.quantity, date: l.date, amount: -l.amount)
       new_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: l.quantity * split_ratio, date: l.date, amount: l.amount)
     end
@@ -138,22 +141,25 @@ class Trade < ApplicationRecord
 
   def add_conversion_trades!
     return unless conversion? && !conversion_to_security_id.nil?
+
+    Lot.reset_lots!(account, security)
+    Lot.reset_lots!(account, conversion_to_security)
+
     quantity_converted = 0
     conversion_ratio = conversion_to_quantity / conversion_from_quantity
     account.lots.where(security_id: security_id).order(:date, :id).each do |l|
       break if quantity_converted >= conversion_from_quantity
       quantity_to_be_converted = conversion_from_quantity - quantity_converted
       if l.quantity <= quantity_to_be_converted
-        account.trades.create(security_id: conversion_to_security_id, quantity: l.quantity * conversion_ratio, amount: l.amount, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
-        account.trades.create(security_id: security_id, quantity: -l.quantity, amount: -l.amount, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        account.trades.create(security_id: conversion_to_security_id, quantity: l.quantity * conversion_ratio, amount: l.amount, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion", date: l.date )
+        account.trades.create(security_id: security_id, quantity: -l.quantity, amount: -l.amount, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion", date: l.date )
         quantity_converted += l.quantity
       elsif l.quantity > quantity_to_be_converted
         ratio_to_convert = quantity_to_be_converted / l.quantity
-        account.trades.create(security_id: conversion_to_security_id, quantity: quantity_to_be_converted * conversion_ratio, amount: l.amount * ratio_to_convert, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
-        account.trades.create(security_id: security_id, quantity: -quantity_to_be_converted, amount: -l.amount * ratio_to_convert, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion" )
+        account.trades.create(security_id: conversion_to_security_id, quantity: quantity_to_be_converted * conversion_ratio, amount: l.amount * ratio_to_convert, trade_type: 'Conversion', conversion_from_security_id: l.security_id, note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion", date: l.date )
+        account.trades.create(security_id: security_id, quantity: -quantity_to_be_converted, amount: -l.amount * ratio_to_convert, trade_type: 'Conversion', note: "#{conversion_ratio}-to-1 #{security.symbol} >> #{conversion_to_security.symbol} conversion", date: l.date )
         quantity_converted += quantity_to_be_converted
       end
     end
   end
-
 end

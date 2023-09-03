@@ -27,7 +27,7 @@ class TradesTest < ApplicationSystemTestCase
     click_on "Create Trade", match: :first
 
     assert_text "Trade was successfully created"
-    assert_selector "h1", text: "Trades"
+    assert_selector "h1", text: "Buy"
   end
 
   test "should update Trade" do

@@ -29,7 +29,7 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
       post account_trades_url @account, as: @user, params: { account_id: @account.id, trade: { account_id: @trade.account_id, amount: @trade.amount, date: @trade.date, fee: @trade.fee, other: @trade.other, price: @trade.price, quantity: @trade.quantity, security_id: @trade.security_id, trade_type: @trade.trade_type } }
     end
 
-    assert_redirected_to account_trades_url(@account)
+    assert_redirected_to account_trade_url(@account, Trade.last)
   end
 
   test "should create trade then conversion" do
@@ -60,7 +60,7 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
 
   test "should update trade" do
     patch account_trade_url(@account, @trade, as: @user), params: { trade: { account_id: @trade.account_id, amount: @trade.amount, date: @trade.date, fee: @trade.fee, other: @trade.other, price: @trade.price, quantity: @trade.quantity, quantity_balance: @trade.quantity_balance, security_id: @trade.security_id, trade_type: @trade.trade_type } }
-    assert_redirected_to account_trades_url(@account)
+    assert_redirected_to account_trade_url(@account, @trade)
   end
 
   test "should destroy trade" do

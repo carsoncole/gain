@@ -213,12 +213,13 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "partial conversion" do
-    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 100)
+    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 100, date: Date.today - 5.days)
     trade_2 = build(:conversion_trade, conversion_to_quantity: 20, conversion_from_quantity: 20, conversion_to_security_id: @security_2.id, account: @account, security: @security)
     trade_2.add_conversion_trades!
-    assert_equal 20, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 20, @account.last_trade(@security_2).quantity_balance
     assert_equal 200, @account.trades.where(security_id: @security_2.id).sum(:amount)
     assert_equal 800, @account.trades.where(security_id: @security.id).sum(:amount)
+    assert_equal Date.today - 5.days, @account.last_trade(@security_2).date
     assert_equal 3, Trade.count
   end
 
@@ -231,14 +232,31 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "conversion of multiple lots" do
-    trades = create_list(:buy_trade, 5, account: @account, security: @security, quantity: 100)
+    trades = create_list(:buy_trade, 5, account: @account, security: @security, quantity: 100, date: Date.today-4.days)
     trade_2 = build(:conversion_trade, conversion_to_quantity: 500, conversion_from_quantity: 500, conversion_to_security_id: @security_2.id, account: @account, security: @security)
     trade_2.add_conversion_trades!
     assert_equal 5, @account.trades.where(security_id: @security_2.id).count
     assert_equal 5000, @account.trades.where(security_id: @security_2.id).sum(:amount)
     assert_equal 500, @account.trades.where(security_id: @security_2.id).sum(:quantity)
-    assert_equal 500, @account.trades.where(security_id: @security_2.id).last.quantity_balance
+    assert_equal 500, @account.last_trade(@security_2).quantity_balance
     assert_equal 5, @account.trades.conversion.where(security_id: @security_2.id).count
-    assert_equal 0, @account.trades.where(security_id: @security.id).last.quantity_balance
+    assert_equal 0, @account.last_trade(@security).quantity_balance
+    assert_equal Date.today-4.days, @account.last_trade(@security_2).date
+  end
+
+  test "trades entered out of order with conversion" do
+    trade_5 = create(:buy_trade, account: @account, security: @security, quantity: 150, date: Date.new(2023,7,1))
+    trade_6 = build(:conversion_trade, account: @account, security: @security, conversion_to_security_id: @security_2.id, conversion_from_quantity: 150, conversion_to_quantity: 450, date: Date.new(2023,7,20))
+    trade_6.add_conversion_trades!
+    trade_1 = create(:buy_trade, account: @account, security: @security, quantity: 125, date: Date.new(2023,8,1))
+    trade_4 = create(:sell_trade, account: @account, security: @security, quantity: 100, date: Date.new(2023,8,7))
+    trade_2 = create(:buy_trade, account: @account, security: @security, quantity: 200, date: Date.new(2023,8,3))
+    trade_3 = create(:sell_trade, account: @account, security: @security, quantity: 100, date: Date.new(2023,8,5))
+
+    assert_equal 125, trade_1.reload.quantity_balance
+    assert_equal 325, trade_2.reload.quantity_balance
+    assert_equal 225, trade_3.reload.quantity_balance
+    assert_equal 125, trade_4.reload.quantity_balance
+    assert_equal 150, trade_5.reload.quantity_balance
   end
 end

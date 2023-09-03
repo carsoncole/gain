@@ -36,7 +36,7 @@ class TradesController < ApplicationController
       @trade.add_split_trades!
       redirect_to account_trades_url(@account), notice: "Trade was successfully created."
     elsif @trade.save
-      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
+      redirect_to account_trade_url(@account, @trade), notice: "Trade was successfully created."
     else
       render :new
     end
@@ -46,7 +46,7 @@ class TradesController < ApplicationController
   def update
     respond_to do |format|
       if @trade.update(trade_params)
-        format.html { redirect_to account_trades_url(@account), notice: "Trade was successfully updated." }
+        format.html { redirect_to account_trade_url(@account, @trade), notice: "Trade was successfully updated." }
         format.json { render :show, status: :ok, location: @trade }
       else
         format.html { render :edit, status: :unprocessable_entity }
