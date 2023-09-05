@@ -24,7 +24,7 @@ Rails.application.routes.draw do\
     get '/sign_up' => 'clearance/users#new', as: 'sign_up'
   end
 
-  resources :accounts, except: :show do
+  resources :accounts do
     resources :trades
     get 'schedule-d' => 'gain_losses#schedule_d', as: 'schedule_d'
     resources :lots, only: :index

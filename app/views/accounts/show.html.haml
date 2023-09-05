@@ -1,0 +1,16 @@
+.col-lg-6
+  %h1= @account.title
+
+  %table.table
+    %tr
+      %td= @account.number
+    %tr
+      %td= @account.currency.name
+    - if @account.note.present?
+      %tr
+        %td= @account.note
+
+  = link_to "Trades", account_trades_path(@account)
+  \|
+  = link_to edit_account_path(@account), id: "edit-account-#{@account.id}" do
+    %i.bi.bi-pencil
