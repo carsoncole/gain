@@ -9,8 +9,8 @@ class GainLossesController < ApplicationController
 
   def schedule_d
     @years = @account.gain_losses.select(:date, :trade_type).map {|i| i.date.year }.uniq
-    @short_term_gain_losses = @account.gain_losses.where("date - purchase_date < 366").order(date: :desc, created_at: :desc)
-    @long_term_gain_losses = @account.gain_losses.where("date - purchase_date > 365").order(date: :desc, created_at: :desc)
+    @short_term_gain_losses = @account.gain_losses.short_term.order(date: :desc, created_at: :desc)
+    @long_term_gain_losses = @account.gain_losses.long_term.order(date: :desc, created_at: :desc)
     if params[:year]
       @year = params[:year]
       @short_term_gain_losses = @short_term_gain_losses.where("strftime('%Y', date) = ?", params[:year])

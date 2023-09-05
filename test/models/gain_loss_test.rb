@@ -204,4 +204,18 @@ class GainLossTest < ActiveSupport::TestCase
     create(:sell_trade, account: @account, security: @security, quantity: 100, price: 20)
     assert_equal 1000, @account.gain_losses.where(security: @security).sum(:amount)
   end
+
+  test "short term" do
+    create(:buy_trade, account: @account, security: @security, quantity: 100, price: 10, date: Date.today-300.days)
+    create(:sell_trade, account: @account, security: @security, quantity: 100, price: 20)
+    assert_equal 1, GainLoss.short_term.count
+    assert_equal 0, GainLoss.long_term.count
+  end
+
+  test "long term" do
+    create(:buy_trade, account: @account, security: @security, quantity: 100, price: 10, date: Date.today-400.days)
+    create(:sell_trade, account: @account, security: @security, quantity: 100, price: 20)
+    assert_equal 1, GainLoss.long_term.count
+    assert_equal 0, GainLoss.short_term.count
+  end
 end

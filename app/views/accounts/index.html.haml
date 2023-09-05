@@ -1,7 +1,7 @@
 %h1 Accounts
 
 
-%table.table
+%table.table#accounts-table
   %thead
     %tr
       %th
@@ -16,6 +16,8 @@
         %td= account.number
         %td= account.currency&.name
         %td.text-end
+          = link_to account_path(account), id: "account-#{account.id}" do
+            %i.bi.bi-eye
           = link_to edit_account_path(account), id: "edit-account-#{account.id}" do
             %i.bi.bi-pencil
           = link_to account, method: :delete, id: "delete-account-#{account.id}", data: { "turbo-method": :delete, "turbo-confirm": 'Are you sure? This is non-reversable.' } do

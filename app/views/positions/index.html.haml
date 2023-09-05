@@ -1,6 +1,12 @@
 .offset-lg-2.col-lg-8
   %h1 Positions
 
+  .col-lg-6
+
+    = form_tag '', method: :get, id: 'year-selector' do
+      = date_select "filter", "date", { start_year: @start_year, end_year: @end_year, default: @date}
+      = submit_tag 'filter', class: 'btn btn-small', id: 'filter-button'
+
   %table.table#positions-table
     %thead
       %tr
@@ -10,5 +16,8 @@
       - @positions.each do |p|
         - next if p.quantity == 0
         %tr
-          %td{id: "security-#{p.security.id}"}= p.security.name
+          %td{id: "security-#{p.security.id}"}
+            = p.security.name
+            = surround("(", ")") do
+              = p.security.symbol
           %td.text-end= number_with_delimiter(p.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)

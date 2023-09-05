@@ -16,6 +16,10 @@
     .mb-4
       = f.label :currency_id, class: 'form-label'
       = f.collection_select :currency_id, current_user.currencies, :id, :name, {}, class: 'form-select', id: 'currency-selection'
+  .col-lg-6
+    .mb-3
+      = f.label :note, class: 'form-label'
+      = f.text_area :note, class: 'form-control'
     .mb-5
       = f.check_box :is_fifo, class: 'form-check-input'
       = f.label :fifo, "FIFO", class: 'form-label-label'

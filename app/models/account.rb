@@ -7,7 +7,7 @@ class Account < ApplicationRecord
 
   validates :title, :number, presence: true
 
-  def positions(date=nil)
+  def positions(date=Date.today)
     Position.all(self, date)
   end
 

@@ -17,15 +17,15 @@
   %tbody
     - @gain_losses.each do |gl|
       %tr
-        %th= nice_date(gl.date)
-        %th= gl.trade.security.name
-        %th.text-end= number_with_delimiter(gl.quantity, precision: 5, strip_insignificant_zeros: true)
-        %th= nice_date(gl.purchase_date)
-        %th= nice_date(gl.date)
-        %th= number_to_currency(gl.cost)
-        %th= number_to_currency(gl.proceeds)
-        %th.text-end= number_to_currency(gl.amount)
-        %th.text-end
+        %td= nice_date(gl.date)
+        %td= gl.trade.security.name
+        %td.text-end= number_with_delimiter(gl.quantity, precision: 5, strip_insignificant_zeros: true)
+        %td= nice_date(gl.purchase_date)
+        %td= nice_date(gl.date)
+        %td= number_to_currency(gl.cost)
+        %td= number_to_currency(gl.proceeds)
+        %td.text-end= number_to_currency(gl.amount)
+        %td.text-end
           = link_to gl.trade_id, account_trade_path(@account, gl.trade_id)
           \|
           = link_to gl.source_trade_id, account_trade_path(@account, gl.source_trade_id)

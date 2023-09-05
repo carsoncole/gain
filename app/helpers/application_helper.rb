@@ -10,7 +10,7 @@ module ApplicationHelper
   end
 
   def description_of_property(gain_loss)
-    "#{gain_loss.quantity.abs.to_s} sh #{gain_loss.security.name}"
+    "#{number_with_delimiter(gain_loss.quantity.abs, precision: 5, strip_insignificant_zeros: true)} sh #{gain_loss.security.name}"
   end
 
 end

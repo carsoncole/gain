@@ -10,6 +10,7 @@ class AccountsTest < ApplicationSystemTestCase
 
   test "visiting the index" do
     visit accounts_url
+    assert has_table? "accounts-table"
     assert_selector "h1", text: "Accounts"
   end
 

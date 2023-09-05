@@ -6,4 +6,6 @@ class GainLoss < ApplicationRecord
 
   validates :date, :quantity, :amount, presence: true
 
+  scope :short_term, -> { where(("julianday(date) - julianday(purchase_date) < 366"))}
+  scope :long_term, -> { where(("julianday(date) - julianday(purchase_date) > 365"))}
 end
