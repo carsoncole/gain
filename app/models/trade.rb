@@ -134,8 +134,8 @@ class Trade < ApplicationRecord
     existing_shares_quantity = account.last_trade(security).quantity_balance
     split_ratio = split_new_shares / existing_shares_quantity
     security.lots.where(account: account).order(:date, :id).each do |l|
-      old_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: -l.quantity, date: l.date, amount: -l.amount)
-      new_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: l.quantity * split_ratio, date: l.date, amount: l.amount)
+      old_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: -l.quantity, date: l.date, amount: -l.amount, note: "Split #{date} - #{split_ratio.to_s} to 1")
+      new_shares_trade = security.trades.create(account: account, trade_type: 'Split', quantity: l.quantity * split_ratio, date: l.date, amount: l.amount, note: "Split #{date} - #{split_ratio.to_s} to 1")
     end
   end
 
