@@ -16,6 +16,11 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get show" do
+    get account_url(as: @user)
+    assert_response :success
+  end
+
   test "should create account" do
     assert_difference("Account.count") do
       post accounts_url(as: @user), params: { account: { currency_id: @account.currency_id, number: @account.number, title: @account.title } }

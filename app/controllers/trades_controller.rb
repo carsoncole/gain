@@ -7,7 +7,7 @@ class TradesController < ApplicationController
   layout 'accounts'
 
   def index
-    @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc))
+    @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc), items: 50)
     if params[:all]
       @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc), items: 1000)
     end
