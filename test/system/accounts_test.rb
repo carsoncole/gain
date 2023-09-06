@@ -14,12 +14,20 @@ class AccountsTest < ApplicationSystemTestCase
     assert_selector "h1", text: "Accounts"
   end
 
+  test "view show" do
+    visit accounts_url
+    click_on "account-#{@account.id}"
+    assert_selector "h1", text: @account.title
+  end
+
   test "should visit account" do
     click_on 'settings-link'
     click_on "account-#{@account.id}-link"
     within "#main-navbar" do
       assert_text @account.title
     end
+    assert_selector "h1", text: 'Trades'
+    has_link? "Trades"
   end
 
   test "should create account" do
@@ -37,6 +45,7 @@ class AccountsTest < ApplicationSystemTestCase
 
   test "should update Account" do
     visit accounts_url
+    has_selector? "Editing account"
     click_on "edit-account-#{@account.id}", match: :first
 
     fill_in "Title", with: @account.title

@@ -16,6 +16,7 @@ class SecuritiesTest < ApplicationSystemTestCase
   test "should create security" do
     visit securities_url
     click_on "new-security-link"
+    assert_selector "h1", text: 'New security'
 
     fill_in "Name", with: @security.name
     fill_in "Symbol", with: @security.symbol
@@ -29,6 +30,7 @@ class SecuritiesTest < ApplicationSystemTestCase
   test "should update Security" do
     visit securities_url(@security)
     click_on "edit-security-#{@security.id}", match: :first
+    assert_selector "h1", text: 'Editing security'
 
     fill_in "Name", with: @security.name
     click_on "Update Security"

@@ -10,6 +10,7 @@ class TradesTest < ApplicationSystemTestCase
   test "visiting the index" do
     visit account_trades_url(@account)
     assert_selector "h1", text: "Trades"
+    has_table? 'trades-tables'
   end
 
   test "should create trade" do
@@ -33,6 +34,7 @@ class TradesTest < ApplicationSystemTestCase
   test "should update Trade" do
     visit account_trade_url(@account, @trade)
     click_on "edit-trade", match: :first
+    assert_selector "h1", text: "Editing trade"
 
     fill_in "Amount", with: @trade.amount
     fill_in "Date", with: @trade.date
