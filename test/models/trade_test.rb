@@ -9,10 +9,9 @@ class TradeTest < ActiveSupport::TestCase
   end
 
   test "quantity sign" do
-    trade = build(:sell_trade)
-    assert_equal 100, trade.quantity
+    trade = build(:sell_trade, security: @security)
     trade.save
-    assert_equal -100, trade.quantity
+    assert_equal -100, trade.reload.quantity
   end
 
   test "quantity sign on updates" do
@@ -47,6 +46,13 @@ class TradeTest < ActiveSupport::TestCase
     trade = build(:conversion_trade)
     assert trade.conversion?
     assert trade.buy_sell_conversion?
+  end
+
+  test "invalid trade" do
+    trade = build(:buy_trade, price: nil, quantity: nil)
+    assert_not trade.valid?
+    assert trade.errors.full_messages.include? "Price can't be blank"
+    assert trade.errors.full_messages.include? "Quantity can't be blank"
   end
 
   test "amount calculation with no fees, commissions" do

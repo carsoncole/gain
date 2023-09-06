@@ -11,7 +11,6 @@ class TradesController < ApplicationController
     if params[:all]
       @pagy, @trades = pagy(@account.trades.order(date: :desc, created_at: :desc), items: 1000)
     end
-
     respond_to do |format|
       format.html
       format.csv { send_data Trade.to_csv(@account), filename: "#{@account.title}-#{@account.number}-trades-#{DateTime.now.strftime("%Y-%d-%m-%H%M")}.csv"}
@@ -30,7 +29,8 @@ class TradesController < ApplicationController
 
   def create
     @trade = @account.trades.new(trade_params)
-
+    @trade.valid?
+    puts @trade.errors.full_messages
     if @trade.conversion?
       @trade.add_conversion_trades!
       redirect_to account_trades_url(@account), notice: "Trade was successfully created."
@@ -40,7 +40,7 @@ class TradesController < ApplicationController
     elsif @trade.save
       redirect_to account_trade_url(@account, @trade), notice: "Trade was successfully created."
     else
-      render :new
+      render(:new, status: :unprocessable_entity)
     end
   end
 

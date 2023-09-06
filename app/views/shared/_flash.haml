@@ -12,5 +12,6 @@
         = flash[:alert].html_safe
     - if flash[:warning]
       .alert.alert-warning
-        .notification-icon %i.bi.bi-exclamation-lg
+        .notification-icon
+          %i.bi.bi-exclamation-lg
         = flash[:warning].html_safe

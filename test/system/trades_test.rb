@@ -31,6 +31,19 @@ class TradesTest < ApplicationSystemTestCase
     assert_selector "h1", text: "Buy"
   end
 
+  test "invalid trade" do
+    visit account_trades_url(@account)
+    click_on "new-trade-link"
+    click_on "Create Trade", match: :first
+
+    within "#error_explanation" do
+      assert_text "2 errors prohibited this trade from being saved"
+      assert_text "Price can't be blank"
+      assert_text "Quantity can't be blank"
+    end
+
+  end
+
   test "should update Trade" do
     visit account_trade_url(@account, @trade)
     click_on "edit-trade", match: :first

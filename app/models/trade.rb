@@ -9,8 +9,8 @@ class Trade < ApplicationRecord
 
   attr_accessor :is_recalc
 
+  validates :price, :quantity, presence: true, if: -> { trade_type == 'Buy' }
   validates :date, :trade_type, :security_id, presence: true
-  validates :price, :quantity, presence: true, if: -> { trade_type == ['Buy', 'Sell'] }
   # validates :split_new_shares, presence: true, if: -> { trade_type == 'Split' && quantity != 0 }
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
@@ -25,7 +25,7 @@ class Trade < ApplicationRecord
   ]
 
   after_initialize :set_defaults!
-  before_validation :set_sign!, unless: :is_recalc
+  before_save :set_sign!, unless: :is_recalc
   before_save :set_amount_or_price!, unless: :is_recalc
   after_save :calculate_quantity_balances!, unless: :is_recalc
   after_destroy :calculate_quantity_balances!
