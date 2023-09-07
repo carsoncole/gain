@@ -54,7 +54,7 @@
           %th Conversion from security:
           %td.text-end= @trade.conversion_from_security.name if @trade.conversion_from_security_id
 
-    - elsif @trade.split
+    - elsif @trade.split?
       %tr
         %th Split new shares:
         %td.text-end= number_with_delimiter @trade.split_new_shares, precision: 2

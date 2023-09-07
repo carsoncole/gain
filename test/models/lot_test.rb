@@ -65,16 +65,16 @@ class LotTest < ActiveSupport::TestCase
     trade_2 = create(:sell_trade, account_id: trade_1.account_id, security_id: trade_1.security_id, quantity: 15)
     assert_equal 2, Lot.count
     trade_2.update(quantity: 10)
-    assert_equal 15, trade_1.reload.lot.quantity
-    assert_not trade_2.reload.lot
+    assert_equal 15, trade_1.lots.first.quantity
+    assert_not trade_2.lots.first
   end
 
   test "new trade prior to existing trades" do
     trade_1 = create(:buy_trade, quantity: 25)
     trade_2 = create(:sell_trade, account_id: trade_1.account_id, security_id: trade_1.security_id, quantity: 15)
     trade_3 = create(:buy_trade, date: Date.today - 1.day, account_id: trade_1.account_id, security_id: trade_1.security_id, quantity: 20)
-    assert_equal 25, trade_1.reload.lot.quantity
-    assert_equal 5, trade_3.reload.lot.quantity
+    assert_equal 25, trade_1.lots.first.quantity
+    assert_equal 5, trade_3.lots.first.quantity
     assert_equal 3, Lot.count
   end
 
@@ -97,8 +97,8 @@ class LotTest < ActiveSupport::TestCase
   test "conversion with security updated on lot" do
     assert_equal @trade.security_id, Lot.first.security_id
     new_security = create(:security, user: @trade.account.user)
-    trade_2 = build(:conversion_trade, conversion_to_quantity: 100, conversion_from_quantity: 100, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
-    trade_2.add_conversion_trades!
+    trade_2 = create(:conversion_trade, conversion_to_quantity: 100, conversion_from_quantity: 100, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
+    assert_equal 3, Trade.count
     assert_equal 1, Lot.count
     assert_equal new_security.id, Lot.first.security_id
   end
@@ -108,7 +108,7 @@ class LotTest < ActiveSupport::TestCase
     account = create(:account, user: security.user)
     create_list(:buy_trade, 20, account: account, security: security)
     assert_equal 21, Lot.count
-    Lot.reset_lots!(account, security)
+    Lot.reset_lots!(account)
     assert_equal 21, Lot.count
   end
 
@@ -137,9 +137,7 @@ class LotTest < ActiveSupport::TestCase
   end
 
   test "split" do
-    split = build(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 1000)
-    split.add_split_trades!
-    assert_equal 3, Trade.count
+    split = create(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 1000)
     assert_equal 1000, @trade.account.last_trade(@trade.security).quantity_balance
     lot = @trade.account.lots.last
     assert_equal 1, @trade.account.lots.count
@@ -149,27 +147,46 @@ class LotTest < ActiveSupport::TestCase
   end
 
   test "split and sell portion" do
-    split = build(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 1000)
-    split.add_split_trades!
+    split = create(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 1000)
+    assert_equal 1000, @trade.account.lots.last.amount
     sell = create(:sell_trade, quantity: 100, price: 10, account: @trade.account, security: @trade.security)
     assert_equal 1, @trade.account.lots.count
-    assert_equal 900, sell.reload.quantity_balance
-    lot = @trade.account.lots.last
-    assert_equal 900, lot.amount
-    assert_equal 900, lot.quantity
+    assert_equal 900, @trade.account.lots.last.amount
+    assert_equal 900, @trade.account.lots.last.quantity
+  end
+
+  test "conversion" do
+    assert_equal 100, @trade.lots.first.quantity
+    assert_equal 1000, @trade.lots.first.amount
+    new_security = create(:security, user: @trade.account.user)
+    conversion = create(:conversion_trade, conversion_to_quantity: 75, conversion_from_quantity: 75, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
+    assert_equal 2, @trade.account.lots.count
+    assert_equal 25, @trade.lots.first.quantity
+    assert_equal 250, @trade.lots.first.amount
+    assert_equal 75, @trade.account.lots.last.quantity
+    assert_equal 750, @trade.account.lots.last.amount
   end
 
   test "conversion then split and sell portion" do
+    assert_equal 100, @trade.account.lots.where(security_id: @trade.security.id).order(:id).first.quantity
+    assert_equal 1000, @trade.account.lots.where(security_id: @trade.security.id).order(:id).first.amount
+
     new_security = create(:security, user: @trade.account.user)
-    conversion = build(:conversion_trade, conversion_to_quantity: 75, conversion_from_quantity: 75, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
-    conversion.add_conversion_trades!
-    split = build(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 250)
-    split.add_split_trades!
-    sell = create(:sell_trade, quantity: 25, price: 10, account: @trade.account, security: @trade.security)
+    conversion = create(:conversion_trade, conversion_to_quantity: 75, conversion_from_quantity: 75, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
+    assert_equal 25, @trade.account.lots.where(security_id: @trade.security_id).order(:id).first.quantity
+    assert_equal 250, @trade.account.lots.where(security_id: @trade.security_id).order(:id).first.amount
+    assert_equal 75, @trade.account.lots.where(security_id: new_security.id).order(:id).first.quantity
+    assert_equal 750, @trade.account.lots.where(security_id: new_security.id).order(:id).first.amount
+
+    split = create(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 250)
     assert_equal 2, @trade.account.lots.count
-    assert_equal 75, @trade.account.lots.order(:id).first.quantity
-    assert_equal 750, @trade.account.lots.order(:id).first.amount
-    assert_equal 225, @trade.account.lots.order(:id).last.quantity
+
+    assert_equal 250, @trade.account.lots.where(security_id: @trade.security.id).order(:id).first.quantity
+    assert_equal 250, @trade.account.lots.where(security_id: @trade.security.id).order(:id).first.amount
+
+    sell = create(:sell_trade, quantity: 25, price: 10, account: @trade.account, security: @trade.security)
+    assert_equal 75, @trade.account.lots.where(security_id: new_security.id).order(:id).last.quantity
+    assert_equal 750, @trade.account.lots.where(security_id: new_security.id).order(:id).last.amount
   end
 
   test "split of multiple lots" do
@@ -178,16 +195,38 @@ class LotTest < ActiveSupport::TestCase
     trade_3 = create(:trade, price: 20, quantity: 50, account: @account, security: @security)
     trade_4 = create(:trade, price: 25, quantity: 50, account: @account, security: @security)
     amount = @account.lots.where(security: @security).sum(:amount)
-    split = build(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 2500)
-    split.add_split_trades!
+    split = create(:split_trade, account: @trade.account, security: @trade.security, split_new_shares: 2500)
 
     assert_equal 4, @account.lots.count
     assert_equal 2500, @account.lots.where(security: @security).sum(:quantity)
-    assert_nil @trade.lot
-    assert_nil trade_2.lot
-    assert_nil trade_3.lot
-    assert_nil trade_4.lot
     assert amount, @account.lots.where(security: @security).sum(:amount)
+  end
+
+  test "buy then a few oversells buy sell than a buy" do
+    create(:sell_trade, price: 10, quantity: 200, account: @account, security: @security)
+    assert_equal 0, @account.gain_losses.sum(:amount)
+
+    create(:sell_trade, price: 10, quantity: 50, account: @account, security: @security)
+    create(:sell_trade, price: 10, quantity: 50, account: @account, security: @security)
+    assert_equal 2000, @account.lots.sum(:amount)
+    assert_equal -200, @account.lots.sum(:quantity)
+    create(:trade, price: 10, quantity: 50, account: @account, security: @security)
+    assert_equal 1500, @account.lots.sum(:amount)
+    assert_equal -150, @account.lots.sum(:quantity)
+    create(:sell_trade, price: 10, quantity: 50, account: @account, security: @security)
+    assert_equal 0, @account.gain_losses.sum(:amount)
+    create(:trade, price: 10, quantity: 50, account: @account, security: @security)
+    assert_equal 0, @account.gain_losses.sum(:amount)
+  end
+
+  test "random buys and sells" do
+    security_2 = create(:security, user: @security.user)
+    securities = [@security, security_2]
+    (1..20).each do |count|
+      create(:trade, account: @account, security: securities[rand(2)], quantity: rand(49) * 2, trade_type: Trade::TYPES[rand(2)], date: Date.today - rand(20))
+    end
+
+    assert_equal 0, @account.gain_losses.sum(:amount)
   end
 end
 

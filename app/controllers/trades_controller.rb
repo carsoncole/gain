@@ -29,15 +29,8 @@ class TradesController < ApplicationController
 
   def create
     @trade = @account.trades.new(trade_params)
-    @trade.valid?
-    puts @trade.errors.full_messages
-    if @trade.conversion?
-      @trade.add_conversion_trades!
-      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
-    elsif @trade.split?
-      @trade.add_split_trades!
-      redirect_to account_trades_url(@account), notice: "Trade was successfully created."
-    elsif @trade.save
+
+    if @trade.save
       redirect_to account_trade_url(@account, @trade), notice: "Trade was successfully created."
     else
       render(:new, status: :unprocessable_entity)

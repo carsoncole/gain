@@ -29,12 +29,12 @@ class ActiveSupport::TestCase
 
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-  fixtures :all
+  # fixtures :all
 
   def system_test_signin(user)
     visit '/sign_in'
     fill_in "Email", with: user.email
-    fill_in "Password", with: user.password
+    fill_in "Password", with: 'password'
     within '#clearance' do
       click_on "Sign in"
     end

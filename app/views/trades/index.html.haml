@@ -21,7 +21,11 @@
       %tr
         %td= trade.date.strftime('%Y-%b-%d')
         %td= trade.trade_type
-        %td= trade.security.name
+        %td
+          = trade.security.name
+          - if trade.note.present?
+            %br
+            = trade.note
         %td.text-end= number_to_currency(trade.price, precision: 5, strip_insignificant_zeros: true)
         %td.text-end= number_with_precision(trade.quantity, delimiter: ",", precision: 4, strip_insignificant_zeros: true)
         %td.text-end= number_to_currency(trade.amount)

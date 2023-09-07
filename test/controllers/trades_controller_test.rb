@@ -50,16 +50,16 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Trade.count", 2) do
       post account_trades_url @account, as: @user, params: { account_id: @account.id, trade: { account_id: @trade.account_id, date: @trade.date, security_id: @trade.security_id, conversion_to_quantity: 100, conversion_from_quantity: 100, conversion_to_security_id: @security_2, trade_type: 'Conversion' } }
     end
-
-    assert_redirected_to account_trades_url(@account)
+    trade = @account.trades.conversion.where(security_id: @trade.security_id).last
+    assert_redirected_to account_trade_url(@account, trade)
   end
 
   test "should create trade then split" do
-    assert_difference("Trade.count", 2) do
+    assert_difference("Trade.count") do
       post account_trades_url @account, as: @user, params: { account_id: @account.id, trade: { account_id: @trade.account_id, date: @trade.date, split_new_shares: 500, security_id: @trade.security_id, trade_type: 'Split' } }
     end
-
-    assert_redirected_to account_trades_url(@account)
+    trade = @account.trades.splits.last
+    assert_redirected_to account_trade_url(@account, trade)
   end
 
   test "should show trade" do
