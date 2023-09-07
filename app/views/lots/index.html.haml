@@ -28,6 +28,7 @@
   %thead
     %tr
       %th Date
+
       %th Security
       %th.text-end Qty
       %th.text-end Amount
@@ -36,7 +37,14 @@
   %tbody
     - @lots.each do |lot|
       %tr
-        %td= nice_date(lot.date)
+        %td
+          = nice_date(lot.date)
+          - if lot.short_term?
+            .badge.text-bg-info
+              Short term
+          - else
+            .badge.text-bg-success
+              Long term
         %td= lot.security.name
         %td.text-end= number_with_delimiter(lot.quantity, precision: 2, strip_insignificant_zeros: true)
         %td.text-end= number_to_currency(lot.amount)

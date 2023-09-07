@@ -170,4 +170,12 @@ class Lot < ApplicationRecord
     end
   end
 
+  def short_term?
+    date > Date.today - 365.days
+  end
+
+  def long_term?
+    date < Date.today - 365.days
+  end
+
 end

@@ -11,7 +11,6 @@ class Trade < ApplicationRecord
 
   validates :price, :quantity, presence: true, if: -> { trade_type == 'Buy' }
   validates :date, :trade_type, :security_id, presence: true
-  # validates :split_new_shares, presence: true, if: -> { trade_type == 'Split' && quantity != 0 }
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
   scope :splits, -> { where(trade_type: 'Split') }
