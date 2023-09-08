@@ -14,3 +14,8 @@ To get started, add a database configuration file in `config/database.yml`. The 
 
 Multiple users can sign up at `/sign_up`, but to disable the ability for sign ups, modify the Clearance settings in `clearance.rb`.
 
+## Features
+
+* Short and long term (> 364 days) gain tracking;
+* IRS Schedule D report;
+* Buy, sell, split and conversion tracking;
