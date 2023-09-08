@@ -19,3 +19,4 @@ Multiple users can sign up at `/sign_up`, but to disable the ability for sign up
 * Short and long term (> 364 days) gain tracking;
 * IRS Schedule D report;
 * Buy, sell, split and conversion tracking;
+* Individual lot breakdown report;
