@@ -15,39 +15,26 @@ class Lot < ApplicationRecord
   end
 
   def self.reset_lots!(account)
-    # puts ""
-    # puts "-- Reset --"*10
-    # puts "Trades to process:#{account.trades.map{|t|t.id} }"
-
     account.reload.lots.destroy_all
     account.reload.gain_losses.destroy_all
 
     account.trades.order(:date, :id).each do |tr|
-      # puts "TRADE #{tr.id}-#{tr.trade_type}--Sec ID:#{tr.security_id}"
       if tr.buy_sell?
-        # puts"-b-"*30
         new_lot = tr.lots.create(account: account, security: tr.security, quantity: tr.quantity, date: tr.date, amount: tr.amount)
-        # puts Lot.all.map{|l| {id: l.id, account: l.account_id, sec_id: l.security.id, quantity: l.quantity, amount: l.amount}}
       elsif tr.split?
-        # puts"-s-"*30
         Lot.split_lots!(tr)
-        # puts Lot.all.map{|l| {id: l.id, account: l.account_id, sec_id: l.security.id, quantity: l.quantity, amount: l.amount}}
-      elsif tr.conversion? && tr.conversion_incoming?
-        # puts"-c-"*30
+      elsif tr.conversion_incoming?
         Lot.convert_lots!(tr)
-        # puts Lot.all.map{|l| {id: l.id, account: l.account_id, sec_id: l.security.id, quantity: l.quantity, amount: l.amount}}
       end
     end
   end
 
-  def self.convert_lots!(trade)
-    return unless trade.conversion?
-
-    if trade.conversion_incoming?
-      outgoing_conversion_trade = trade.account.trades.conversion.where(security_id: trade.conversion_from_security_id, date: trade.date).first
+  def self.convert_lots!(tr)
+    if tr.conversion_incoming?
+      outgoing_conversion_trade = tr.account.trades.conversion.where(security_id: tr.conversion_from_security_id, date: tr.date).first
       return unless outgoing_conversion_trade
 
-      lots_to_convert = outgoing_conversion_trade.security.lots.where(account_id: trade.account_id).order(:date, :id)
+      lots_to_convert = outgoing_conversion_trade.security.lots.where(account_id: tr.account_id).order(:date, :id)
       qty_to_convert_from = outgoing_conversion_trade.conversion_from_quantity
       qty_to_convert_to = outgoing_conversion_trade.conversion_to_quantity
       conversion_ratio = qty_to_convert_to / qty_to_convert_from
@@ -57,12 +44,12 @@ class Lot < ApplicationRecord
       lots_to_convert.each do |lot|
         break if qty_to_convert == 0
         if lot.quantity <= qty_to_convert
-          trade.account.lots.create(trade_id: lot.trade_id, security_id: trade.security_id, quantity: lot.quantity * conversion_ratio, amount: lot.amount, date: lot.date)
+          tr.account.lots.create(trade_id: lot.trade_id, security_id: tr.security_id, quantity: lot.quantity * conversion_ratio, amount: lot.amount, date: lot.date)
           qty_to_convert -= lot.quantity
           lot.destroy
         elsif lot.quantity > qty_to_convert
           amount = lot.amount * (qty_to_convert / lot.quantity)
-          trade.account.lots.create(trade_id: trade.id, security_id: trade.security_id, quantity: qty_to_convert * conversion_ratio, amount: amount, date: lot.date)
+          tr.account.lots.create(trade_id: tr.id, security_id: tr.security_id, quantity: qty_to_convert * conversion_ratio, amount: amount, date: lot.date)
           lot.amount -= amount
           lot.quantity -= qty_to_convert
           lot.save

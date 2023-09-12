@@ -165,6 +165,34 @@ class LotTest < ActiveSupport::TestCase
     assert_equal 250, @trade.lots.first.amount
     assert_equal 75, @trade.account.lots.last.quantity
     assert_equal 750, @trade.account.lots.last.amount
+    assert_equal 1, @trade.account.lots.where(security: new_security).count
+    assert_equal 1, @trade.account.lots.where(security: @trade.security).count
+    assert_equal 75, @trade.account.lots.where(security: new_security).last.quantity
+  end
+
+  test "conversion of multiple lots" do
+    account = @trade.account
+    security = @trade.security
+    security_2 = create(:security, user: account.user)
+    security_3 = create(:security, user: account.user)
+    trade_2 = create(:trade, account: account, security: security)
+    trade_3 = create(:trade, account: account, security: security)
+    trade_4 = create(:trade, account: account, security: security)
+    trade_5 = create(:trade, account: account, security: security)
+    # 5 trades = 500 shares @ $10
+    assert_equal 5, account.lots.count
+    assert_equal 5000, account.lots.where(security: security).sum(:amount)
+    assert_equal 500, account.lots.where(security: security).sum(:quantity)
+
+    conversion = create(:conversion_trade, conversion_to_quantity: 500, conversion_from_quantity: 500, conversion_to_security_id: security_2.id, account: account, security: security)
+    assert_equal 5, account.lots.count
+    assert_equal 5000, account.lots.where(security: security_2).sum(:amount)
+    assert_equal 500, account.lots.where(security: security_2).sum(:quantity)
+
+    conversion = create(:conversion_trade, conversion_to_quantity: 250, conversion_from_quantity: 250, conversion_to_security_id: security_3.id, account: account, security: security_2)
+    assert_equal 6, account.lots.count
+    assert_equal 2500, account.lots.where(security: security_3).sum(:amount)
+    assert_equal 250, account.lots.where(security: security_3).sum(:quantity)
   end
 
   test "conversion then split and sell portion" do

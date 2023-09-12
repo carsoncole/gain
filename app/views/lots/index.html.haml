@@ -32,6 +32,7 @@
       %th Security
       %th.text-end Qty
       %th.text-end Amount
+      %th.text-end Trade
       %th.text-end ID
       %th.text-end
   %tbody
@@ -48,5 +49,6 @@
         %td= lot.security.name
         %td.text-end= number_with_delimiter(lot.quantity, precision: 2, strip_insignificant_zeros: true)
         %td.text-end= number_to_currency(lot.amount)
+        %td.text-end= link_to lot.trade_id, [lot.account, lot.trade]
         %td.text-end= lot.id
         %td

@@ -42,9 +42,6 @@
       %tr
         %th Conversion from share quantity:
         %td.text-end= number_with_delimiter @trade.conversion_from_quantity, precision: 2, strip_insignificant_zeros: true
-      %tr
-        %th Conversion security:
-        %td.text-end= @trade.security.name
       - if @trade.conversion_to_security_id
         %tr
           %th Conversion to security:

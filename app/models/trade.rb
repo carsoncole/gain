@@ -9,7 +9,7 @@ class Trade < ApplicationRecord
 
   attr_accessor :is_recalc
 
-  validates :price, :quantity, presence: true, if: -> { trade_type == 'Buy' }
+  validates :price, :quantity, presence: true, if: -> { trade_type == 'Buy' && amount.blank? }
   validates :date, :trade_type, :security_id, presence: true
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
