@@ -185,12 +185,16 @@ class LotTest < ActiveSupport::TestCase
     assert_equal 500, account.lots.where(security: security).sum(:quantity)
 
     conversion = create(:conversion_trade, conversion_to_quantity: 500, conversion_from_quantity: 500, conversion_to_security_id: security_2.id, account: account, security: security)
+
+    assert conversion.conversion_outgoing?
     assert_equal 5, account.lots.count
     assert_equal 5000, account.lots.where(security: security_2).sum(:amount)
     assert_equal 500, account.lots.where(security: security_2).sum(:quantity)
 
     conversion = create(:conversion_trade, conversion_to_quantity: 250, conversion_from_quantity: 250, conversion_to_security_id: security_3.id, account: account, security: security_2)
+
     assert_equal 6, account.lots.count
+    assert_equal 3, account.lots.where(security: security_3).count
     assert_equal 2500, account.lots.where(security: security_3).sum(:amount)
     assert_equal 250, account.lots.where(security: security_3).sum(:quantity)
   end

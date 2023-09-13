@@ -31,12 +31,13 @@ class Lot < ApplicationRecord
 
   def self.convert_lots!(tr)
     if tr.conversion_incoming?
-      outgoing_conversion_trade = tr.account.trades.conversion.where(security_id: tr.conversion_from_security_id, date: tr.date).first
-      return unless outgoing_conversion_trade
+      outgoing_conversion_trade = tr.account.trades.conversion.where(security_id: tr.conversion_from_security_id, date: tr.date).last
+      return unless outgoing_conversion_trade && outgoing_conversion_trade.conversion_outgoing?
 
       lots_to_convert = outgoing_conversion_trade.security.lots.where(account_id: tr.account_id).order(:date, :id)
       qty_to_convert_from = outgoing_conversion_trade.conversion_from_quantity
       qty_to_convert_to = outgoing_conversion_trade.conversion_to_quantity
+
       conversion_ratio = qty_to_convert_to / qty_to_convert_from
       qty_converted = 0
       qty_to_convert = qty_to_convert_from
