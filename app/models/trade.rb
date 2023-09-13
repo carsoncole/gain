@@ -60,7 +60,7 @@ class Trade < ApplicationRecord
     if conversion? && conversion_to_security_id.present?
       new_security = Security.find(conversion_to_security_id)
       note = "#{security.name} #{conversion_from_quantity} shrs => #{new_security.name} #{conversion_to_quantity} shrs"
-      account.trades.create(security_id: conversion_to_security_id, conversion_from_security_id: security_id,quantity: conversion_to_quantity, trade_type: 'Conversion', note: note)
+      account.trades.create(security_id: conversion_to_security_id, conversion_from_security_id: security_id,quantity: conversion_to_quantity, trade_type: 'Conversion', note: note, date: date)
     end
   end
 
