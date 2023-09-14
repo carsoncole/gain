@@ -55,6 +55,16 @@ class TradeTest < ActiveSupport::TestCase
     assert trade.errors.full_messages.include? "Quantity can't be blank"
   end
 
+  test "conversion validation" do
+    trade = build(:conversion_trade, security: create(:security), price: 10)
+    assert_not trade.valid?
+    assert_equal "Price must be blank", trade.errors.full_messages.first
+
+    trade = build(:conversion_trade, security: create(:security), amount: 10)
+    assert_not trade.valid?
+    assert_equal "Amount must be blank", trade.errors.full_messages.first
+  end
+
   test "amount calculation with no fees, commissions" do
     trade = create(:trade, price: 10, quantity: 100)
     assert_equal 1000, trade.amount

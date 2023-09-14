@@ -11,6 +11,8 @@ class Trade < ApplicationRecord
 
   validates :price, :quantity, presence: true, if: -> { trade_type == 'Buy' && amount.blank? }
   validates :date, :trade_type, :security_id, presence: true
+  validates :price, :amount, absence: true, if: :conversion?
+
 
   scope :buy_sell, -> { where(trade_type: ['Buy', 'Sell'])}
   scope :splits, -> { where(trade_type: 'Split') }
@@ -32,6 +34,7 @@ class Trade < ApplicationRecord
   after_create :add_conversion!, if: :conversion?
   after_destroy :calculate_quantity_balances!
   after_commit :reset_lots!, unless: :is_recalc
+
 
   def set_split_values!
     if split? && quantity.blank? && prior_trade

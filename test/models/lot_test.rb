@@ -168,6 +168,15 @@ class LotTest < ActiveSupport::TestCase
     assert_equal 1, @trade.account.lots.where(security: new_security).count
     assert_equal 1, @trade.account.lots.where(security: @trade.security).count
     assert_equal 75, @trade.account.lots.where(security: new_security).last.quantity
+
+
+    incoming_conversion_trade = @trade.account.trades.conversion.where(security_id: conversion.conversion_to_security_id, date: conversion.date).last
+
+    assert incoming_conversion_trade
+    assert_not incoming_conversion_trade.conversion_to_security_id
+    assert incoming_conversion_trade.conversion_from_security_id
+    assert_equal 75, incoming_conversion_trade.quantity
+    assert_equal -75, conversion.quantity
   end
 
   test "conversion of multiple lots" do
@@ -205,6 +214,7 @@ class LotTest < ActiveSupport::TestCase
 
     new_security = create(:security, user: @trade.account.user)
     conversion = create(:conversion_trade, conversion_to_quantity: 75, conversion_from_quantity: 75, conversion_to_security_id: new_security.id, account: @trade.account, security: @trade.security)
+
     assert_equal 25, @trade.account.lots.where(security_id: @trade.security_id).order(:id).first.quantity
     assert_equal 250, @trade.account.lots.where(security_id: @trade.security_id).order(:id).first.amount
     assert_equal 75, @trade.account.lots.where(security_id: new_security.id).order(:id).first.quantity

@@ -3,11 +3,12 @@
   %table.table
     %tbody
     %tr
-      %th Date:
-      %td.text-end= @trade.date
-    %tr
       %th.text-center(colspan='2')
         %h1= @trade.trade_type
+    %tr
+      %th Date:
+      %td.text-end= @trade.date
+
     %tr
       %th Security:
       %td.text-end= @trade.security.name
@@ -19,18 +20,21 @@
       %tr
         %th Quantity:
         %td.text-end= number_with_delimiter @trade.quantity, precision: 2
-      %tr
-        %th Fee:
-        %td.text-end= number_to_currency @trade.fee
-      %tr
-        %th Other:
-        %td.text-end= number_to_currency @trade.other
+      - if @trade.fee != 0
+        %tr
+          %th Fee:
+          %td.text-end= number_to_currency @trade.fee
+      - if @trade.other != 0
+        %tr
+          %th Other:
+          %td.text-end= number_to_currency @trade.other
       %tr
         %th Amount:
         %td.text-end= number_to_currency @trade.amount
       %tr
         %th Security balance:
         %td.text-end= number_with_delimiter(@trade.quantity_balance, precision: 5, strip_insignificant_zeros: true)
+
 
     - elsif @trade.conversion?
       %tr
